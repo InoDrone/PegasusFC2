@@ -23,7 +23,7 @@ namespace os
    */
   bool Queue::send(const void * const pvItemToQueue, TickType_t xTicksToWait)
   {
-    return xQueueSend(queue, pvItemToQueue, xTicksToWait) != pdTRUE;
+    return xQueueSend(queue, pvItemToQueue, xTicksToWait) == pdTRUE;
   }
 
   /**
@@ -31,7 +31,7 @@ namespace os
    */
   bool Queue::receive(void *buffer, TickType_t xTicksToWait)
   {
-    return xQueueReceive(queue, buffer, xTicksToWait) != pdTRUE;
+    return xQueueReceive(queue, buffer, xTicksToWait) == pdTRUE;
   }
 
 } /* namespace os */

@@ -129,15 +129,6 @@ SECTIONS
         *(.glue_7t)
 
     } >FLASH
-    
-    .modules :
-    {
-    	. = ALIGN(4);
-    	__modules_start = .;
-    	KEEP(*(.modules));
-    	. = ALIGN(4);
-    	__modules_end = .;
-    } >FLASH
 
 	/* ARM magic sections */
 	.ARM.extab :

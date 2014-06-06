@@ -36,6 +36,7 @@ namespace os {
 		extern void DefaultHandler(void);
 
 		extern void DMA1_Stream3_IRQ(void);
+		extern void DMA1_Stream6_IRQ(void);
 	}
 
 	__attribute__((section(".cpu_vectors")))
@@ -103,7 +104,7 @@ namespace os {
 			/* DMA1_Stream5_IRQHandler */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* DMA1_Stream6_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::DMA1_Stream6_IRQ),
 			/* ADC_IRQHandler ADC1-3  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* CAN1_TX_IRQHandler CAN1 TX  */

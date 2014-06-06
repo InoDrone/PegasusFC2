@@ -12,6 +12,11 @@
 #include "System.h"
 #include "Gpio.h"
 #include "Uart.h"
+#include "Spi.h"
+#include "Timer.h"
+#include "TimerChannel.h"
+
+#include "PWMOut.h"
 
 
 #endif /* PEGASUSHAL_H_ */

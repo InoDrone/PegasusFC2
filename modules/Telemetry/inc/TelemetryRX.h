@@ -8,23 +8,21 @@
 #ifndef TELEMETRYRX_H_
 #define TELEMETRYRX_H_
 
-#include <pegasusos.h>
+#include <boards.h>
 
 class TelemetryRX : public os::Thread
 {
   public:
-    TelemetryRX () :
-      Thread("TelemetryRX", 1) {
+    TelemetryRX ();
 
-	init();
-
-	/* Start Task */
-	start();
+    void init(UAVLink::Instance* uavlink);
+    inline void start() {
+      Thread::start();
     }
+    void run();
 
   private:
-	  void init();
-	  void run();
+    UAVLink::Instance* uavlink;
 };
 
 #endif /* TELEMETRY_H_ */

@@ -189,7 +189,17 @@ namespace os {
       template<DMA D, StreamAddress S>
       void Stream<D,S>::handle() {
 	DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
-	DMA_ClearFlag(reg, DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3 | DMA_FLAG_FEIF3 );
+	switch(S) {
+	  case STREAM3:
+	    DMA_ClearFlag(reg, DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3 | DMA_FLAG_FEIF3 );
+	    break;
+	  case STREAM6:
+	    DMA_ClearFlag(reg, DMA_FLAG_TCIF6 | DMA_FLAG_HTIF6 | DMA_FLAG_TEIF6 | DMA_FLAG_DMEIF6 | DMA_FLAG_FEIF6 );
+	    break;
+	  default:
+	    break;
+	}
+
 
 	if (_sISRCallback) {
 	    _sISRCallback();

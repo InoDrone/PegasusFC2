@@ -21,9 +21,12 @@
 #include "queue.h"
 #include "semphr.h"
 
+#include "List.h"
+
 #include <pegasushal.h>
 
 #include "Thread.h"
+#include "Queue.h"
 #include "Module.h"
 #include "ModuleManager.h"
 

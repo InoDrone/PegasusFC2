@@ -1,12 +1,9 @@
 #ifndef UAVLINKLISTENR_H_
 #define UAVLINKLISTENR_H_
 
-namespace obj {
-
-	class UAVLinkListener {
-	public:
-		virtual void UAVLinkHandle(UAVLinkEvent*);
-	};
-}
+class UAVLinkListener {
+public:
+	virtual int32_t transmitData(uint8_t *data, int32_t length) = 0;
+};
 
 #endif

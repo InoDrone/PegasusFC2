@@ -13,6 +13,10 @@
 
 #include "Gpio.h"
 #include "Dma.h"
+#include "Print.h"
+
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 #define USART1_DMA_RX 		os::hal::DMA2_STREAM5
 #define USART1_DMA_RX_CHANNEL	DMA_Channel_4
@@ -66,7 +70,10 @@ namespace os {
 
 	  static inline bool bytesAvailable();
 	  static inline void write(uint8_t c);
-	  static inline void write(const char *str);
+	  static inline uint16_t write(const uint8_t* buffer, uint16_t size);
+	  static inline uint16_t write(const char* buffer);
+
+	  static inline uint8_t read();
 
 	  struct DMAFifo {
             uint8_t buffer[1024];
@@ -76,6 +83,7 @@ namespace os {
             DMA_Stream_TypeDef* stream;
 	  };
 
+
 	private:
 
 	  static bool isrEnabled;
@@ -84,6 +92,10 @@ namespace os {
 
 	  static void startTx();
 	  static void writeDMA(uint8_t c);
+
+	  static xSemaphoreHandle txMutex;
+	  static xSemaphoreHandle rxMutex;
+	  static xSemaphoreHandle bufferSendSem;
 
       };
 
@@ -98,6 +110,15 @@ namespace os {
       template<Address A>
       typename Uart<A>::DMAFifo Uart<A>::rx;
 
+      template<Address A>
+      xSemaphoreHandle Uart<A>::rxMutex;
+
+      template<Address A>
+      xSemaphoreHandle Uart<A>::txMutex;
+
+      template<Address A>
+      xSemaphoreHandle Uart<A>::bufferSendSem;
+
       /* Class functions */
       /////////////////////
       template<Address A>
@@ -105,6 +126,9 @@ namespace os {
       void Uart<A>::init(uint32_t bauds, bool enabled) {
 	USART_InitTypeDef init;
 	USART_TypeDef* reg = reinterpret_cast<USART_TypeDef*>(A);
+
+	bufferSendSem = xSemaphoreCreateMutex();
+	//rxMutex = xSemaphoreCreateBinary();
 
 	RX::init(GPIO_Mode_AF, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_UP );
 	TX::init(GPIO_Mode_AF, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_UP );
@@ -233,7 +257,6 @@ namespace os {
         dmaRX.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
 
         /* CONFIGURE DMA RX */
-
         dmaRX.DMA_Memory0BaseAddr = (uint32_t)rx.buffer;
         dmaRX.DMA_DIR = DMA_DIR_PeripheralToMemory;
         dmaRX.DMA_BufferSize = sizeof(rx.buffer);
@@ -242,7 +265,14 @@ namespace os {
         dmaRX.DMA_MemoryBurst = DMA_MemoryBurst_Single;
         dmaRX.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
-        dmaTX = dmaRX;
+        DMA_StructInit(&dmaTX);
+        dmaTX.DMA_PeripheralBaseAddr = (uint32_t)&reg->DR;
+        dmaTX.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+        dmaTX.DMA_MemoryInc = DMA_MemoryInc_Enable;
+        dmaTX.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+        dmaTX.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+        dmaTX.DMA_Priority = DMA_Priority_Low;
+        dmaTX.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
         dmaTX.DMA_DIR = DMA_DIR_MemoryToPeripheral;
         dmaTX.DMA_BufferSize = sizeof(tx.buffer);
         dmaTX.DMA_Mode = DMA_Mode_Normal;
@@ -256,6 +286,7 @@ namespace os {
             USART1_DMA_RX::init(dmaRX);
             USART1_DMA_RX::enable();
             rx.pos = USART1_DMA_RX::getCurrDataCounter();
+            rx.stream = USART1_DMA_RX::getReg();
 
             dmaTX.DMA_Channel = USART1_DMA_TX_CHANNEL;
             USART1_DMA_TX::init(dmaTX);
@@ -269,6 +300,7 @@ namespace os {
             USART2_DMA_RX::init(dmaRX);
             USART2_DMA_RX::enable();
             rx.pos = USART2_DMA_RX::getCurrDataCounter();
+            rx.stream = USART2_DMA_RX::getReg();
 
             dmaTX.DMA_Channel = USART2_DMA_TX_CHANNEL;
             USART2_DMA_TX::init(dmaTX);
@@ -282,6 +314,7 @@ namespace os {
             USART3_DMA_RX::init(dmaRX);
             USART3_DMA_RX::enable();
             rx.pos = USART3_DMA_RX::getCurrDataCounter();
+            rx.stream = USART3_DMA_RX::getReg();
 
             dmaTX.DMA_Channel = USART3_DMA_TX_CHANNEL;
             USART3_DMA_TX::init(dmaTX);
@@ -294,11 +327,12 @@ namespace os {
 
         USART_DMACmd(reg, USART_DMAReq_Tx, ENABLE);
         USART_DMACmd(reg, USART_DMAReq_Rx, ENABLE);
+
       }
 
       template<Address A>
       bool Uart<A>::bytesAvailable() {
-	return rx.stream->NTDR != rx.pos;
+	return rx.stream->NDTR != rx.pos;
       }
 
       template<Address A>
@@ -347,11 +381,51 @@ namespace os {
       }
 
       template<Address A>
-      void Uart<A>::write(const char *str) {
-        while (*str) {
-            writeDMA(*str++);
-        }
+      uint16_t Uart<A>::write(const uint8_t* buffer, uint16_t size) {
+	  uint8_t *ch = (uint8_t*)buffer;
+
+	  if (xSemaphoreTake(bufferSendSem, 5) != pdTRUE) {
+	      return -1;
+	  }
+
+	  while (size--) {
+	      writeDMA(*ch++);
+	  }
+
+	  xSemaphoreGive(bufferSendSem);
+	  return size;
       }
+
+      template<Address A>
+      uint16_t Uart<A>::write(const char* buffer) {
+	uint16_t size = 0;
+
+	  if (xSemaphoreTake(bufferSendSem, 5) != pdTRUE) {
+	      return -1;
+	  }
+
+        while (*buffer) {
+            size++;
+            writeDMA(*buffer++);
+        }
+
+	xSemaphoreGive(bufferSendSem);
+        return size;
+      }
+
+      template<Address A>
+      uint8_t Uart<A>::read()
+      {
+          uint8_t c;
+          uint16_t bufferSize = sizeof(rx.buffer);
+          c = rx.buffer[bufferSize - rx.pos];
+          if (--rx.pos == 0) {
+              rx.pos = bufferSize;
+          }
+
+          return c;
+      }
+
     }
 
     typedef uart::Uart<uart::U1> SERIAL1;

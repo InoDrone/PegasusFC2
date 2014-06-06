@@ -5,8 +5,8 @@
  *      Author: alienx
  */
 
-#ifndef QUEUE_H_
-#define QUEUE_H_
+#ifndef OS_QUEUE_H_
+#define OS_QUEUE_H_
 
 #include <FreeRTOS.h>
 #include <queue.h>
@@ -27,4 +27,4 @@ namespace os
 
 } /* namespace os */
 
-#endif /* QUEUE_H_ */
+#endif /* OS_QUEUE_H_ */

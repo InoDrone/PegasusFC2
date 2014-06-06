@@ -8,20 +8,24 @@
 #ifndef TELEMETRYTX_H_
 #define TELEMETRYTX_H_
 
-#include <pegasusos.h>
+#include <boards.h>
 
-class TelemetryTX : public os::Thread, public os::Module
+class TelemetryTX : public os::Thread, public UAVLinkListener
 {
   public:
-    TelemetryTX () :
-      Thread("TelemetryTX", 1),
-      Module() {}
+    TelemetryTX ();
 
-    void init();
+    void init(UAVLink::Instance*);
     inline void start() {
       Thread::start();
     }
     void run();
+
+    int32_t transmitData(uint8_t *data, int32_t length);
+
+  private:
+    os::Queue queue;
+    UAVLink::Instance* uavlink;
 };
 
 #endif /* TELEMETRY_H_ */

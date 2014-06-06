@@ -9,7 +9,6 @@
 #define GPIO_H_
 
 #include <pegasusos.h>
-
 #include <stm32f4xx_gpio.h>
 
 namespace os {

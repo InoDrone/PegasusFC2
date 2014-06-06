@@ -43,6 +43,10 @@ namespace os {
 			void DMA1_Stream3_IRQ(void) {
 			  DMA1_STREAM3::handle();
 			}
+
+			void DMA1_Stream6_IRQ(void) {
+			  DMA1_STREAM6::handle();
+			}
 		}
 	} /* namespace hal */
 } /* namespace os */

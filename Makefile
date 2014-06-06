@@ -25,7 +25,7 @@ $(BUILD_DIR):
 #	BOARDS TARGETS
 ################################
 .PHONY: pegasusfc_v2
-pegasusfc_v2:
+pegasusfc_v2: clean
 	cd $(ROOT_DIR)/targets/pegasusv2b && \
 	make -r --no-print-directory \
 	BOARD_NAME=pegasusv2b \

@@ -37,6 +37,8 @@ namespace os {
 
 		extern void DMA1_Stream3_IRQ(void);
 		extern void DMA1_Stream6_IRQ(void);
+
+		extern void EXTx_IRQ(void);
 	}
 
 	__attribute__((section(".cpu_vectors")))
@@ -82,15 +84,15 @@ namespace os {
 			/* RCC_IRQHandler */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* EXTI0_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::EXTx_IRQ),
 			/* EXTI1_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::EXTx_IRQ),
 			/* EXTI2_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::EXTx_IRQ),
 			/* EXTI3_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::EXTx_IRQ),
 			/* EXTI4_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::EXTx_IRQ),
 			/* DMA1_Stream0_IRQHandler */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* DMA1_Stream1_IRQHandler */
@@ -116,7 +118,7 @@ namespace os {
 			/* CAN1_SCE_IRQHandler CAN1 SCE  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* EXTI9_5_IRQHandler        External Line[9:5]s  */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::EXTx_IRQ),
 			/* TIM1_BRK_TIM9_IRQHandler         TIM1 Break and TIM9     */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* TIM1_UP_TIM10_IRQHandler         TIM1 Update and TIM10     */
@@ -150,7 +152,7 @@ namespace os {
 			/* UART3 */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* EXTI15_10_IRQHandler             External Line[15:10]s */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::EXTx_IRQ),
 			/* RTC_Alarm_IRQHandler  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* OTG_FS_WKUP_IRQHandler  */

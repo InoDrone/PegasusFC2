@@ -15,13 +15,18 @@ namespace os {
 
 	class Thread {
 	public:
-		Thread(const char *name, UBaseType_t priority) :
+		Thread(const char *name, UBaseType_t priority, uint16_t stacksize = configMINIMAL_STACK_SIZE ) :
 		  mName(name),
-		  mPriority(priority) { }
+		  mPriority(priority),
+		  _mStackSize(stacksize) { }
 
 		void start() {
-		  xTaskCreate( &call, mName, configMINIMAL_STACK_SIZE, this, mPriority, &mHandle );
+		  xTaskCreate( &call, mName, _mStackSize, this, mPriority, &mHandle );
 		}
+
+		/*static void create(TaskFunction_t cb, const char*name, UBaseType_t priority, uint16_t stacksize = configMINIMAL_STACK_SIZE, xTaskHandle* handle = NULL) {
+		  xTaskCreate( cb, name, stacksize, NULL, priority, &handle );
+		}*/
 
 		inline static void delay(uint16_t ms);
 
@@ -34,6 +39,7 @@ namespace os {
 		xTaskHandle mHandle;
 		const char* mName;
 		UBaseType_t mPriority;
+		uint16_t _mStackSize;
 
 		virtual void run() = 0;
 	};

@@ -9,6 +9,12 @@
 #define BOARDSDEFS_H_
 
 #include <pegasushal.h>
+#include "devices/MPU6000.h"
+
+#define IRQ_PRIO_LOW            12              // lower than RTOS
+#define IRQ_PRIO_MID            8               // higher than RTOS
+#define IRQ_PRIO_HIGH           5               // for SPI, ADC, I2C etc...
+#define IRQ_PRIO_HIGHEST        4               // for USART etc...
 
 /////////////////////////////////////////////////////////
 // MOTOR CONFIGURATION
@@ -107,8 +113,17 @@ typedef os::hal::HAL_SPI1 SPI1_DRIVER;
 typedef os::hal::spi::SpiDevice<SPI1_DRIVER, os::hal::PE12> MPU6000_SPIDEVICE;
 typedef os::hal::spi::SpiDevice<SPI1_DRIVER, os::hal::PE15> MS5611_SPIDEVICE;
 
-#define SPIDRIVER_INIT SPI1_DRIVER::init(); \
-  os::hal::HAL_SPI1::init<os::hal::PA7, os::hal::PA6, os::hal::PA5>();
+#define SPIDRIVER_INIT SPI1_DRIVER::init<os::hal::PA6, os::hal::PA7, os::hal::PA5>(); \
+		MPU6000_SPIDEVICE::init(); \
+		MS5611_SPIDEVICE::init();
+
+
+/////////////////////////////////////////////////////////
+// MPU6000 CONFIGURATION
+/////////////////////////////////////////////////////////
+#define USE_MPU6000
+typedef os::hal::PE8 MPU6000_INT_PIN;
+typedef os::device::MPU6000<MPU6000_SPIDEVICE> MPU6000;
 
 
 #endif /* BOARDSDEFS_H_ */

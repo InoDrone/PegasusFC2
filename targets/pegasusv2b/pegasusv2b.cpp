@@ -1,9 +1,6 @@
 #include <pegasusos.h>
 
-#include "boardsDefs.h"
-
-void task1(void *pvParameters);
-void task2(void *pvParameters);
+#include "boards.h"
 
 using namespace os::hal;
 
@@ -14,21 +11,22 @@ static void initTask(void *params);
 int main()
 {
     System::init();
-    
-   // PegasusOSBoardInit();
-#ifdef TELEMETRY_ENABLE
-    TELEMETRY_PORT::init<TELEMETRY_PORT_RX_PIN, TELEMETRY_PORT_TX_PIN>(TELEMETRY_PORT_BAUDS);
-    TELEMETRY_PORT::write("V1\r\n");
-#endif
+
 
     PE1::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
     PE1::low();
+
+    PE2::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
+    PE2::low();
+
+    PE3::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
+    PE3::low();
 
     PE0::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
     PE0::low();
 
 
-    xTaskCreate(initTask, "initTask", configMINIMAL_STACK_SIZE, NULL, INIT_TASK_PRIORITY, NULL);
+    xTaskCreate(&initTask, "initTask", configMINIMAL_STACK_SIZE * 4, NULL, INIT_TASK_PRIORITY, NULL);
 
     /* Start FreeRTOS scheduler */
     vTaskStartScheduler();
@@ -41,7 +39,7 @@ int main()
 }
 
 void initTask(__attribute__((unused)) void *parameters) {
-  MOTOR1::init();
+  boardInit();
 
   os::ModuleManager::initAll();
   os::ModuleManager::startAll();

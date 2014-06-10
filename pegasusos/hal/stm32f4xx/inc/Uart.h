@@ -66,7 +66,7 @@ namespace os {
 	  static inline void enableRxInterrupt();
 
 	  static void enableDMA();
-	  static void dmaInterrupt();
+	  static bool dmaInterrupt();
 
 	  static inline bool bytesAvailable();
 	  static inline void write(uint8_t c);
@@ -336,9 +336,12 @@ namespace os {
       }
 
       template<Address A>
-      void Uart<A>::dmaInterrupt() {
+      bool Uart<A>::dmaInterrupt() {
 	  tx.enabled = false;
 	  startTx();
+
+	  /* No ISR switch required */
+	  return false;
       }
 
       /**

@@ -15,8 +15,6 @@ TelemetryRX::TelemetryRX()  :
 void TelemetryRX::init(UAVLink::Instance* ulink)
 {
     this->uavlink = ulink;
-    os::hal::PE2::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
-    os::hal::PE2::high();
 }
 
 void TelemetryRX::run()
@@ -25,7 +23,6 @@ void TelemetryRX::run()
 
 	while(TELEMETRY_PORT::bytesAvailable()) {
 	    UAVLink::receive(uavlink, TELEMETRY_PORT::read());
-	    os::hal::PE2::toggle();
 	}
     }
 }

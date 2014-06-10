@@ -9,6 +9,8 @@
 #define PEGASUSHAL_H_
 
 
+#include "Delay.h"
+#include "Exti.h"
 #include "System.h"
 #include "Gpio.h"
 #include "Uart.h"

@@ -11,6 +11,10 @@ namespace obj {
     class Attitude: public UAVLinkObject
     {
         public:
+            // Field Type Definitions
+
+
+            // Field Datas           
             struct Datas {
                    float q1;
                    float q2;

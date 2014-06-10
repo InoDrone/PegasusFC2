@@ -12,26 +12,84 @@
 using namespace obj;
 
 Sensors::Sensors () :
-  Thread("Sensors", TASK_PRIORITY) {}
+  Thread("Sensors", TASK_PRIORITY, configMINIMAL_STACK_SIZE * 4) {}
 
 void Sensors::init() {
 
   accel = AccelSensor::instance();
-  Attitude::instance();
+  gyro = GyroSensor::instance();
+  AttitudeSettings::instance();
 
-  os::hal::PE3::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
+  //os::hal::PE3::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
 }
 
 void Sensors::run() {
 
-    AccelSensor::Datas accelDatas = accel->get();
+    AccelSensor::Datas accelDatas;
+    GyroSensor::Datas gyroDatas;
+    uint8_t mpuSample = 0;
+
+    int32_t accAccum[3] = { 0, 0, 0 };
+    int32_t gyroAccum[3] = {0, 0, 0 };
+
+    float gyroScaling = 0;
+    float accScaling = 0;
 
     while(1) {
-	accelDatas.x = 0.1f;
-	accel->set(accelDatas);
+            mpuSample = 0;
+            memset(accAccum, 0, sizeof(accAccum));
+            memset(gyroAccum, 0, sizeof(gyroAccum));
 
-	os::hal::PE3::toggle();
-	delay(100);
+            {
+                MPU6000::DatasValues mpuDatas;
+                os::Queue* mpuQueue = MPU6000::getQueue();
+                while (mpuQueue->receive(&mpuDatas, mpuSample == 0 ? 10 : 0)) {
+                        accAccum[0] += mpuDatas.acc.x;
+                        accAccum[1] += mpuDatas.acc.y;
+                        accAccum[2] += mpuDatas.acc.z;
+
+                        gyroAccum[0] += mpuDatas.gyro.x;
+                        gyroAccum[1] += mpuDatas.gyro.y;
+                        gyroAccum[2] += mpuDatas.gyro.z;
+
+                    mpuSample++;
+                }
+
+                if (mpuSample == 0) {
+                    continue;
+                }
+
+                gyroScaling = MPU6000::getGyroScale();
+                accScaling = MPU6000::getAccelScale();
+
+                gyroDatas.temperature = accelDatas.temperature = 35.0f + ((float)mpuDatas.temp + 512.0f) / 340.0f;
+            }
+
+            /* Accel values scaling - offset */
+            accelDatas.x = (float)accAccum[0] / mpuSample;
+            accelDatas.x = accelDatas.x * accScaling;
+
+            accelDatas.y = (float)accAccum[1] / mpuSample;
+            accelDatas.y = accelDatas.y * accScaling;
+
+            accelDatas.z = (float)accAccum[2] / mpuSample;
+            accelDatas.z = accelDatas.z * accScaling;
+
+
+            accel->set(accelDatas);
+
+            /* Gyro values scaling - offset */
+            gyroDatas.x = (float)gyroAccum[0] / mpuSample;
+            gyroDatas.x = gyroDatas.x * gyroScaling;
+
+            gyroDatas.y = (float)gyroAccum[1] / mpuSample;
+            gyroDatas.y = gyroDatas.y * gyroScaling;
+
+            gyroDatas.z = (float)gyroAccum[2] / mpuSample;
+            gyroDatas.z = gyroDatas.z * gyroScaling;
+
+            gyro->set(gyroDatas);
+
     }
 }
 

@@ -33,10 +33,12 @@ namespace obj {
     void Attitude::setDefaultValues() {
 
         meta.flags = 
-            0 << TELEMETRY_ACKED_SHIFT ||
+            0 << TELEMETRY_ACKED_SHIFT |
             UPDATEMODE_PERIODIC << TELEMETRY_UPDATEON_SHIFT;
 
         meta.updatePeriod = 100;
+        
+        // Defaults Values
     
     }
     

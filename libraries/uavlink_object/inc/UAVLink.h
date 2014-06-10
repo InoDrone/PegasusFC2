@@ -11,6 +11,7 @@
 
 #include "UAVLinkObject.h"
 #include "UAVLinkListener.h"
+#include "UAVLinkPeriodic.h"
 #include "UAVLinkObjectsInclude.h"
 
 //typedef int32_t (*UAVLinkOutputStream)(uint8_t* datas, int32_t length);
@@ -38,6 +39,12 @@ public:
     uint8_t crc;
     RxStats state;
     uint32_t rxCount;
+    uint32_t rxPacketLength;
+  };
+
+  struct ResponseType {
+          uint8_t type;
+          uint32_t id;
   };
 
   struct Instance {
@@ -48,13 +55,22 @@ public:
     xSemaphoreHandle    transactionLock;
     xSemaphoreHandle    ackSema;
     Input 		input;
+    ResponseType    response;
   };
 
   static Instance* init(UAVLinkListener*);
   static RxStats receive(Instance* inst, uint8_t byte);
+  static bool sendObject(Instance* inst, obj::UAVLinkObject* obj, bool acked, uint32_t timeout);
+
+  static void updateAck(Instance* inst, uint8_t type, uint32_t id);
 
 private:
   static RxStats processInput(Instance* inst, uint8_t byte);
+  static bool startObjectTransaction(Instance* inst, obj::UAVLinkObject* obj, uint8_t type, uint32_t timeout);
+  static bool send(Instance* inst, uint8_t type, obj::UAVLinkObject* obj);
+  static bool receiveObject(Instance* inst, uint8_t type, uint32_t id, uint8_t *data);
+
+  static uint8_t generateCRC(const uint8_t*, uint16_t length);
 };
 
 #endif /* UAVLINK_H_ */

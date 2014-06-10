@@ -4,13 +4,17 @@
 #include "UAVLinkObject.h"
 #include <cstring>
 
-#define ACCELSENSOR_ID 0xCA83953A
+#define ACCELSENSOR_ID 0x9AB7D469
 #define ACCELSENSOR_ISSETTINGS false
 
 namespace obj {
     class AccelSensor: public UAVLinkObject
     {
         public:
+            // Field Type Definitions
+
+
+            // Field Datas           
             struct Datas {
                    float x;
                    float y;

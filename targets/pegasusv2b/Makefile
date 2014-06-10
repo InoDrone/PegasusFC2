@@ -10,6 +10,7 @@ MODULES += Telemetry
 
 CFLAGS += -ffast-math
 
+CPPSRC += $(HALDIR)/boards.cpp
 CPPSRC += $(HALDIR)/pegasusv2b.cpp
 
 SRC += $(sort $(wildcard $(LIBRARYDIR)/uavlink_object/*.c))

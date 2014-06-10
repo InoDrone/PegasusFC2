@@ -17,12 +17,16 @@ namespace os
   {
   public:
     Queue (const UBaseType_t uxQueueLength, const UBaseType_t uxItemSize);
+    Queue () {};
 
+    bool create(const UBaseType_t uxQueueLength, const UBaseType_t uxItemSize);
     bool send(const void * const pvItemToQueue, TickType_t xTicksToWait);
+    bool sendFromISR(const void * const pvItemToQueue, BaseType_t * const woken);
     bool receive(void *buffer, TickType_t xTicksToWait);
 
   private:
     xQueueHandle queue;
+    bool isCreated;
   };
 
 } /* namespace os */

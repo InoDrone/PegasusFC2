@@ -23,6 +23,7 @@ public:
 
 private:
   obj::AccelSensor* accel;
+  obj::GyroSensor* gyro;
 };
 
 #endif /* SENSORS_H_ */

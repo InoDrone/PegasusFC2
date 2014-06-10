@@ -22,6 +22,18 @@ namespace hal {
 	 */
 	void System::startup() {
 
+	    /* enable usage, bus and memory faults */
+	    SCB->SHCSR  |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk;
+
+	    /* configure FP state save behaviour - automatic, lazy save */
+	    FPU->FPCCR  |= FPU_FPCCR_ASPEN_Msk | FPU_FPCCR_LSPEN_Msk;
+
+	    /* configure default FPU state */
+	    FPU->FPDSCR |= FPU_FPDSCR_DN_Msk; /* enable Default NaN */
+
+	    /* enable the FPU */
+	    SCB->CPACR  |= (0xf << 20);      // turn on CP10/11 for FP support on cores that implement it
+
 		initBss(&__bss_start__, &__bss_end__);
 		initData(&_sidata, &_sdata, &_edata);
 
@@ -35,8 +47,17 @@ namespace hal {
 		SystemInit();
 		SystemCoreClockUpdate();
 
+        // Timer Prescaler Enable
+        RCC->DCKCFGR |= RCC_DCKCFGR_TIMPRE;
+
 		/* 4 bits for Interrupt priorities so no sub priorities */
 		NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+		/* Configure HCLK clock as SysTick clock source. */
+		SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
+
+	    /* Init delay */
+	    os::hal::Delay::init();
 	}
 
 	void System::reset() {

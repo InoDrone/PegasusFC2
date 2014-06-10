@@ -3,6 +3,8 @@
 
 #include "AccelSensor.h"
 #include "Attitude.h"
+#include "AttitudeSettings.h"
+#include "GyroSensor.h"
 
 
 #endif

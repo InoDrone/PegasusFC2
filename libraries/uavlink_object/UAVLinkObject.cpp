@@ -65,20 +65,20 @@ namespace obj {
 	}
 
 	UAVLinkObject* UAVLinkObject::getById(uint32_t id) {
-	  UAVLinkObject* object;
+        UAVLinkObject* object = (UAVLinkObject *)NULL;
 
-	  //xSemaphoreTakeRecursive(mutex, portMAX_DELAY);
-	  _objRegistred.start();
-	  while (_objRegistred.hasNext()) {
-	      UAVLinkObject* obj = _objRegistred.next();
-	      if (obj->_mId == id) {
-		  object = obj;
-	      }
-	  }
-	  //xSemaphoreGiveRecursive(mutex);
+        //xSemaphoreTakeRecursive(mutex, portMAX_DELAY);
+        _objRegistred.start();
+        while (_objRegistred.hasNext()) {
+          UAVLinkObject* obj = _objRegistred.next();
+          if (obj->_mId == id) {
+              object = obj;
+          }
+        }
+        //xSemaphoreGiveRecursive(mutex);
 
-	  return object;
-	}
+        return object;
+    }
 
 	bool UAVLinkObject::telemetryIsAcked() {
 	  return ((meta.flags >> TELEMETRY_ACKED_SHIFT) & 1) == 1;
@@ -86,6 +86,10 @@ namespace obj {
 
 	UAVLinkObject::UPDATE_MODE UAVLinkObject::telemetryUpdateMode() {
 	  return (UAVLinkObject::UPDATE_MODE)((meta.flags >> TELEMETRY_UPDATEON_SHIFT) & 0x03);
+	}
+
+	uint16_t UAVLinkObject::telemetryUpdatePeriod() {
+	  return meta.updatePeriod;
 	}
 
 	void UAVLinkObject::pack(uint8_t *out) {

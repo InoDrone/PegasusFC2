@@ -25,6 +25,7 @@
 
 #include <pegasushal.h>
 
+#include "Trace.h"
 #include "Thread.h"
 #include "Queue.h"
 #include "Module.h"

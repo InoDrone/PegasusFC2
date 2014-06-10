@@ -274,11 +274,11 @@ _wait(int* status __attribute__((unused)))
   return -1;
 }
 
-int __attribute__((weak))
+/*int __attribute__((weak))
 _write(int file __attribute__((unused)), char* ptr __attribute__((unused)),
     int len __attribute__((unused)))
 {
   errno = ENOSYS;
   return -1;
-}
+}*/
 

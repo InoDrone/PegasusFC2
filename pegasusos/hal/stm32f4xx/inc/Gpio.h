@@ -43,9 +43,12 @@ namespace os {
 					static inline void high();
 					static inline void low();
 					static inline void toggle();
+
+					static inline uint8_t getPortNumber();
+					static inline uint8_t getPinNumber();
 				private:
-					static inline uint16_t PIN(u8 pin) {
-						return 1 << pin;
+					static inline uint32_t PIN(u8 pin) {
+						return (1 << pin);
 					}
 					Pin();
 			};
@@ -56,7 +59,9 @@ namespace os {
 				GPIO_TypeDef* reg = reinterpret_cast<GPIO_TypeDef*>(P);
 				switch (P) {
 				case Address::A:
-		            RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+				    if ( (RCC->AHB1ENR & RCC_AHB1Periph_GPIOA) == 0) {
+				            RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+				    }
 					break;
 				case Address::B:
 		            RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
@@ -80,14 +85,11 @@ namespace os {
 
 				init.GPIO_Pin = PIN(N);
 				GPIO_Init(reg, &init);
-
-				low();
 			}
 
 			template<Address P, u8 N>
 			void Pin<P, N>::init(GPIOMode_TypeDef mode, GPIOSpeed_TypeDef speed, GPIOOType_TypeDef type, GPIOPuPd_TypeDef pupd) {
 				GPIO_InitTypeDef GPIOStructInit;
-				GPIO_StructInit(&GPIOStructInit);
 
 				GPIOStructInit.GPIO_Pin = PIN(N);
 				GPIOStructInit.GPIO_Mode = mode;
@@ -95,15 +97,19 @@ namespace os {
 				GPIOStructInit.GPIO_OType = type;
 				GPIOStructInit.GPIO_PuPd = pupd;
 
-				init (GPIOStructInit);
+                init (GPIOStructInit);
 
 			}
 
 			template<Address P, u8 N>
 			void Pin<P, N>::setAlternateFunction(uint8_t AF) {
 				GPIO_TypeDef* reg = reinterpret_cast<GPIO_TypeDef*>(P);
+			          uint32_t current = reg->AFR[N >> 0x03];
+			          current &= ~((uint32_t)0xF << ((uint32_t)((uint32_t)N & (uint32_t)0x07) * 4)); // reset pin AF
+			          current |=  ((uint32_t)AF << ((uint32_t)((uint32_t)N & (uint32_t)0x07) * 4)); // Set AF mode
 
-				GPIO_PinAFConfig(reg, N, AF);
+			          reg->AFR[N >> 0x03] = current; // Save to register
+				//GPIO_PinAFConfig(reg, N, AF);
 
 			}
 
@@ -127,6 +133,31 @@ namespace os {
 				GPIO_TypeDef* reg = reinterpret_cast<GPIO_TypeDef*>(P);
 
 				GPIO_ToggleBits(reg, PIN(N));
+			}
+
+			template<Address P, u8 N>
+			uint8_t Pin<P, N>::getPortNumber() {
+			  switch (P) {
+			    case Address::A:
+				    return 0x00;
+			    case Address::B:
+				    return 0x01;
+			    case Address::C:
+				    return 0x02;
+			    case Address::D:
+				    return 0x03;
+			    case Address::E:
+				    return 0x04;
+			    case Address::F:
+				    return 0x05;
+			    case Address::G:
+				    return 0x06;
+			  }
+			}
+
+			template<Address P, u8 N>
+			uint8_t Pin<P, N>::getPinNumber() {
+			  return N;
 			}
 
 		}

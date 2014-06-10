@@ -8,11 +8,7 @@
 #ifndef UAVLINKOBJECT_H_
 #define UAVLINKOBJECT_H_
 
-#include <Queue.h>
-#include <List.h>
-#include <FreeRTOS.h>
-#include <semphr.h>
-#include "boardsDefs.h"
+#include <pegasusos.h>
 
 namespace obj {
 
@@ -22,7 +18,8 @@ public:
 	enum EVENT_TYPE {
 		EVENT_NONE,
 		EVENT_UPDATED,
-		EVENT_RECEIVED
+		EVENT_RECEIVED,
+		EVENT_PERIODIC
 	};
 
 	enum UPDATE_MODE {
@@ -47,6 +44,7 @@ public:
 
 	bool telemetryIsAcked();
 	UPDATE_MODE telemetryUpdateMode();
+	uint16_t telemetryUpdatePeriod();
 
 	void pack(uint8_t *out);
 	void unpack(const uint8_t *in);
@@ -60,6 +58,10 @@ public:
 
 	const char* getName() {
 	  return _mName;
+	}
+
+	uint32_t getId() {
+	  return _mId;
 	}
 
 protected:

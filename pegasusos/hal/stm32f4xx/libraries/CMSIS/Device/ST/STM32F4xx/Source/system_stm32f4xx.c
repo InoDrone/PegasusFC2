@@ -915,6 +915,62 @@ void SystemInit_ExtMemCtl(void)
 #endif /* DATA_IN_ExtSDRAM */
 
 
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
+{
+    /* These are volatile to try and prevent the compiler/linker optimising them
+    away as the variables never actually get used.  If the debugger won't show the
+    values of the variables, make them global my moving their declaration outside
+    of this function. */
+    volatile uint32_t r0;
+    volatile uint32_t r1;
+    volatile uint32_t r2;
+    volatile uint32_t r3;
+    volatile uint32_t r12;
+    volatile uint32_t lr; /* Link register. */
+    volatile uint32_t pc; /* Program counter. */
+    volatile uint32_t psr;/* Program status register. */
+    volatile unsigned long _CFSR ;
+    volatile unsigned long _HFSR ;
+    volatile unsigned long _DFSR ;
+    volatile unsigned long _AFSR ;
+    volatile unsigned long _BFAR ;
+    volatile unsigned long _MMAR ;
+
+    r0 = pulFaultStackAddress[ 0 ];
+    r1 = pulFaultStackAddress[ 1 ];
+    r2 = pulFaultStackAddress[ 2 ];
+    r3 = pulFaultStackAddress[ 3 ];
+
+    r12 = pulFaultStackAddress[ 4 ];
+    lr = pulFaultStackAddress[ 5 ];
+    pc = pulFaultStackAddress[ 6 ];
+    psr = pulFaultStackAddress[ 7 ];
+
+    // Configurable Fault Status Register
+    // Consists of MMSR, BFSR and UFSR
+    _CFSR = (*((volatile unsigned long *)(0xE000ED28))) ;
+
+    // Hard Fault Status Register
+    _HFSR = (*((volatile unsigned long *)(0xE000ED2C))) ;
+
+    // Debug Fault Status Register
+    _DFSR = (*((volatile unsigned long *)(0xE000ED30))) ;
+
+    // Auxiliary Fault Status Register
+    _AFSR = (*((volatile unsigned long *)(0xE000ED3C))) ;
+
+    // Read the Fault Address Registers. These may not contain valid values.
+    // Check BFARVALID/MMARVALID to see if they are valid values
+    // MemManage Fault Address Register
+    _MMAR = (*((volatile unsigned long *)(0xE000ED34))) ;
+    // Bus Fault Address Register
+    _BFAR = (*((volatile unsigned long *)(0xE000ED38))) ;
+
+    /* When the following line is hit, the variables contain the register values. */
+    for( ;; );
+}
+
 /**
   * @}
   */

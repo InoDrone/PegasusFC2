@@ -10,6 +10,7 @@
 
 #include <stm32f4xx.h>
 #include <stm32f4xx_dma.h>
+#include <FreeRTOS.h>
 
 #include "Irq.h"
 
@@ -18,7 +19,7 @@ namespace os {
 
     namespace dma {
 
-      typedef void (*DMAISRCallback)();
+      typedef bool (*DMAISRCallback)();
 
       enum DMA {
 	DMA_1 = DMA1_BASE,
@@ -188,6 +189,8 @@ namespace os {
 
       template<DMA D, StreamAddress S>
       void Stream<D,S>::handle() {
+	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+
 	DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
 	switch(S) {
 	  case STREAM3:
@@ -202,8 +205,10 @@ namespace os {
 
 
 	if (_sISRCallback) {
-	    _sISRCallback();
+	    xHigherPriorityTaskWoken = _sISRCallback() ? pdTRUE : xHigherPriorityTaskWoken;
 	}
+
+	portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
       }
 
       template<DMA D, StreamAddress S>

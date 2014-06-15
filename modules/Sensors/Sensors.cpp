@@ -18,7 +18,11 @@ void Sensors::init() {
 
   accel = AccelSensor::instance();
   gyro = GyroSensor::instance();
-  AttitudeSettings::instance();
+  attitudeSettings = AttitudeSettings::instance();
+  attitudeSettings->connect(this);
+
+  settings = attitudeSettings->get();
+
 
   //os::hal::PE3::init(GPIO_Mode_OUT, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_DOWN );
 }
@@ -67,29 +71,43 @@ void Sensors::run() {
 
             /* Accel values scaling - offset */
             accelDatas.x = (float)accAccum[0] / mpuSample;
-            accelDatas.x = accelDatas.x * accScaling;
+            accelDatas.x = accelDatas.x * accScaling - settings.AccelBias.X;
+            //accelDatas.x = -accelDatas.x;
 
             accelDatas.y = (float)accAccum[1] / mpuSample;
-            accelDatas.y = accelDatas.y * accScaling;
+            accelDatas.y = accelDatas.y * accScaling - settings.AccelBias.Y;
 
             accelDatas.z = (float)accAccum[2] / mpuSample;
-            accelDatas.z = accelDatas.z * accScaling;
+            accelDatas.z = accelDatas.z * accScaling - settings.AccelBias.Z;
 
 
             accel->set(accelDatas);
 
             /* Gyro values scaling - offset */
             gyroDatas.x = (float)gyroAccum[0] / mpuSample;
-            gyroDatas.x = gyroDatas.x * gyroScaling;
+            gyroDatas.x = (gyroDatas.x * gyroScaling) - settings.GyroBias.X;
 
             gyroDatas.y = (float)gyroAccum[1] / mpuSample;
-            gyroDatas.y = gyroDatas.y * gyroScaling;
+            gyroDatas.y = (gyroDatas.y * gyroScaling) - settings.GyroBias.Y;
 
             gyroDatas.z = (float)gyroAccum[2] / mpuSample;
-            gyroDatas.z = gyroDatas.z * gyroScaling;
+            gyroDatas.z = (gyroDatas.z * gyroScaling) - settings.GyroBias.Z;
+            //gyroDatas.z = -gyroDatas.z;
 
             gyro->set(gyroDatas);
 
+    }
+}
+
+void Sensors::uavlinkHandle(void *params) {
+    UAVLinkObject::UAVLinkEvent* event = reinterpret_cast<UAVLinkObject::UAVLinkEvent*>(params);
+    if (event == NULL) {
+        return;
+    }
+
+    if (event->obj->getId() == ATTITUDESETTINGS_ID) {
+        os::hal::PE1::high();
+        settings = attitudeSettings->get();
     }
 }
 

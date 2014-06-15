@@ -17,8 +17,9 @@
 #include "Spi.h"
 #include "Timer.h"
 #include "TimerChannel.h"
+#include "FSFlash.h"
 
 #include "PWMOut.h"
-
+#include "PWMIn.h"
 
 #endif /* PEGASUSHAL_H_ */

@@ -934,6 +934,7 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
     volatile unsigned long _HFSR ;
     volatile unsigned long _DFSR ;
     volatile unsigned long _AFSR ;
+    volatile uint16_t _UFSR ;
     volatile unsigned long _BFAR ;
     volatile unsigned long _MMAR ;
 
@@ -956,6 +957,9 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
 
     // Debug Fault Status Register
     _DFSR = (*((volatile unsigned long *)(0xE000ED30))) ;
+
+    // Auxiliary Fault Status Register
+    _UFSR = (*((volatile uint16_t *)(0xE000ED2A))) ;
 
     // Auxiliary Fault Status Register
     _AFSR = (*((volatile unsigned long *)(0xE000ED3C))) ;

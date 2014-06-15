@@ -9,8 +9,10 @@
 #define SENSORS_H_
 
 #include <boards.h>
+#include <Math.h>
 
-class Sensors : public os::Thread, public os::Module
+
+class Sensors : public os::Thread, public os::Module, public UAVLinkCallbackListener
 {
 public:
   Sensors ();
@@ -21,9 +23,14 @@ public:
   }
   void run();
 
+  void uavlinkHandle(void *params);
+
 private:
   obj::AccelSensor* accel;
   obj::GyroSensor* gyro;
+  obj::AttitudeSettings* attitudeSettings;
+
+  obj::AttitudeSettings::Datas settings;
 };
 
 #endif /* SENSORS_H_ */

@@ -49,7 +49,7 @@ INCLUDEDIRS += $(HALINCDIR)
 INCLUDEDIRS += $(foreach mod, $(MODULES), $(MODULEDIR)/$(mod)/inc)
 
 # Libs
-EXTRA_LIBS += m
+EXTRA_LIBS += m stdc++ supc++
 
 ifeq ($(MCU),cortex-m4)
     LDFLAGS += $(addprefix -T,$(LINKER_SCRIPTS))
@@ -115,9 +115,11 @@ CXXSTANDARD = -std=gnu++11
 CFLAGS += $(ARCHFLAGS)
 CFLAGS += $(CDEFS)
 CFLAGS += -O0
+CFLAGS += -g3
 CFLAGS += -gdwarf-2
 CFLAGS += -mapcs-frame
 CFLAGS += -fomit-frame-pointer
+CFLAGS += -fsingle-precision-constant
 CFLAGS += -Wall -Wextra
 CLFAGS += -Wfloat-equal -Wunsuffixed-float-constants -Wdouble-promotion
 CFLAGS += -Wshadow

@@ -30,5 +30,6 @@
 #include "Queue.h"
 #include "Module.h"
 #include "ModuleManager.h"
+#include "Receiver.h"
 
 #endif

@@ -16,22 +16,28 @@ namespace os {
 
       template<class TIM, Channel C>
       class TimerChannel {
-      public:
-	static inline void init(Mode mode, uint16_t Hz);
+          public:
+            static inline void init(Mode mode, uint16_t Hz, uint8_t priority = 128);
 
-	static inline void setTimePulse(uint16_t value);
-	static inline TIM_TypeDef* getTimer();
+            static inline void setTimePulse(uint16_t value);
+            static inline TIM_TypeDef* getTimer();
+            static inline uint8_t getChannel();
+
       };
 
       /**
        *
        */
       template<class TIM, Channel C>
-      void TimerChannel<TIM,C>::init(Mode mode, uint16_t Hz) {
-	  TIM::init();
-	  TIM::setFreq(Hz);
-	  TIM::setMode(C, mode);
-	  TIM::enable();
+      void TimerChannel<TIM,C>::init(Mode mode, uint16_t Hz, uint8_t priority) {
+          TIM::init();
+          TIM::setFreq(Hz);
+          TIM::setMode(C, mode);
+          TIM::enable();
+
+          if (mode == Mode::MODE_IC) {
+              TIM::enableInterrupt(priority);
+          }
       }
 
       /**
@@ -39,15 +45,36 @@ namespace os {
        */
       template<class TIM, Channel C>
       void TimerChannel<TIM,C>::setTimePulse(uint16_t value) {
-	  TIM::setTimePulse(C, value);
+          TIM::setTimePulse(C, value);
       }
 
       /**
        *
        */
       template<class TIM, Channel C>
-      TIM_TypeDef* TimerChannel<TIM,C>::getTimer() {
-	  return TIM::getReg();
+          TIM_TypeDef* TimerChannel<TIM,C>::getTimer() {
+          return TIM::getReg();
+      }
+
+      template<class TIM, Channel C>
+      uint8_t TimerChannel<TIM,C>::getChannel() {
+              uint8_t channel = 4;
+              switch (C) {
+                  case CHANNEL1:
+                      channel = 0;
+                  break;
+                  case CHANNEL2:
+                      channel = 1;
+                  break;
+                  case CHANNEL3:
+                      channel = 2;
+                  break;
+                  case CHANNEL4:
+                      channel = 3;
+                  break;
+              }
+
+              return channel;
       }
     }
 

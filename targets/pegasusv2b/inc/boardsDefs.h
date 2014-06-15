@@ -30,13 +30,13 @@ typedef os::hal::PA2 MOTOR7_PIN;
 typedef os::hal::PA3 MOTOR8_PIN;
 
 typedef os::hal::pwm::Output<os::hal::TIM8_CHANNEL1, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR1;
-typedef os::hal::pwm::Output<os::hal::TIM8_CHANNEL2, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR2;
-typedef os::hal::pwm::Output<os::hal::TIM8_CHANNEL3, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR3;
-typedef os::hal::pwm::Output<os::hal::TIM8_CHANNEL4, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR4;
-typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL1, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR5;
-typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL2, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR6;
-typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL3, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR7;
-typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL4, MOTOR1_PIN, MOTOR_PWM_HZ> MOTOR8;
+typedef os::hal::pwm::Output<os::hal::TIM8_CHANNEL2, MOTOR2_PIN, MOTOR_PWM_HZ> MOTOR2;
+typedef os::hal::pwm::Output<os::hal::TIM8_CHANNEL3, MOTOR3_PIN, MOTOR_PWM_HZ> MOTOR3;
+typedef os::hal::pwm::Output<os::hal::TIM8_CHANNEL4, MOTOR4_PIN, MOTOR_PWM_HZ> MOTOR4;
+typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL1, MOTOR5_PIN, MOTOR_PWM_HZ> MOTOR5;
+typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL2, MOTOR6_PIN, MOTOR_PWM_HZ> MOTOR6;
+typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL3, MOTOR7_PIN, MOTOR_PWM_HZ> MOTOR7;
+typedef os::hal::pwm::Output<os::hal::TIM5_CHANNEL4, MOTOR8_PIN, MOTOR_PWM_HZ> MOTOR8;
 
 #define MOTOR_INIT_ALL MOTOR1::init(); \
   MOTOR2::init(); \
@@ -79,24 +79,24 @@ typedef os::hal::PD13	RC6_PIN;
 typedef os::hal::PD14 	RC7_PIN;
 typedef os::hal::PD15 	RC8_PIN;
 
-/*typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL1,  RC1_PIN> RC1;
-typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL2,  RC1_PIN> RC2;
-typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL3,  RC1_PIN> RC3;
-typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL4,  RC1_PIN> RC4;
-typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL1,  RC1_PIN> RC5;
-typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL2,  RC1_PIN> RC6;
-typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL3,  RC1_PIN> RC7;
-typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL4,  RC1_PIN> RC8;
+typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL1,  RC1_PIN> RC1;
+typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL2,  RC2_PIN> RC2;
+typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL3,  RC3_PIN> RC3;
+typedef os::hal::pwm::Input<os::hal::TIM1_CHANNEL4,  RC4_PIN> RC4;
+typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL1,  RC5_PIN> RC5;
+typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL2,  RC6_PIN> RC6;
+typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL3,  RC7_PIN> RC7;
+typedef os::hal::pwm::Input<os::hal::TIM4_CHANNEL4,  RC8_PIN> RC8;
 
-#define RCINPUT_INIT_ALL RC1::init(); \
-    RC2::init(); \
-    RC3::init(); \
-    RC4::init(); \
-    RC5::init(); \
-    RC6::init(); \
-    RC7::init(); \
-    RC8::init();
-*/
+#define RCINPUT_INIT_ALL RC1::init(IRQ_PRIO_MID); \
+    RC2::init(IRQ_PRIO_MID); \
+    RC3::init(IRQ_PRIO_MID); \
+    RC4::init(IRQ_PRIO_MID); \
+    RC5::init(IRQ_PRIO_MID); \
+    RC6::init(IRQ_PRIO_MID); \
+    RC7::init(IRQ_PRIO_MID); \
+    RC8::init(IRQ_PRIO_MID);
+
 /////////////////////////////////////////////////////////
 // COM CONFIGURATION
 /////////////////////////////////////////////////////////

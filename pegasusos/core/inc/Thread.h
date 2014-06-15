@@ -29,6 +29,7 @@ namespace os {
 		}*/
 
 		inline static void delay(uint16_t ms);
+		inline static void delayUntilMS (uint32_t *start, uint16_t ms);
 
 
 		static void call(void* task) {
@@ -46,9 +47,13 @@ namespace os {
 
 	 // Inline Methods
 	 ///////////////////
-	inline void Thread::delay (uint16_t ms) {
+	void Thread::delay (uint16_t ms) {
 	    vTaskDelay(ms / portTICK_PERIOD_MS);
 	}
+
+    void Thread::delayUntilMS (uint32_t *start, uint16_t ms) {
+        vTaskDelayUntil(start, ms / portTICK_PERIOD_MS);
+    }
 }
 
 

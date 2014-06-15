@@ -10,90 +10,95 @@
 
 #include <pegasusos.h>
 
+#include "UAVLinkCallbackListener.h"
+
 namespace obj {
 
-class UAVLinkObject {
-public:
-	typedef util::List<UAVLinkObject*> UAVLinkObjectList;
-	enum EVENT_TYPE {
-		EVENT_NONE,
-		EVENT_UPDATED,
-		EVENT_RECEIVED,
-		EVENT_PERIODIC
-	};
+    class UAVLinkObject {
+        public:
 
-	enum UPDATE_MODE {
-	    UPDATEMODE_MANUAL    = 0, /** Manually update object, by calling the updated() function */
-	    UPDATEMODE_PERIODIC  = 1, /** Automatically update object at periodic intervals */
-	    UPDATEMODE_ONCHANGE  = 2, /** Only update object when its data changes */
-	};
+            typedef util::List<UAVLinkObject*> UAVLinkObjectList;
+            enum EVENT_TYPE {
+                EVENT_NONE,
+                EVENT_UPDATED,
+                EVENT_RECEIVED,
+                EVENT_PERIODIC
+            };
 
-	enum META_FLAGS {
-	  TELEMETRY_ACKED_SHIFT,
-	  TELEMETRY_UPDATEON_SHIFT
-	};
+            enum UPDATE_MODE {
+                UPDATEMODE_MANUAL    = 0, /** Manually update object, by calling the updated() function */
+                UPDATEMODE_PERIODIC  = 1, /** Automatically update object at periodic intervals */
+                UPDATEMODE_ONCHANGE  = 2, /** Only update object when its data changes */
+            };
 
-	struct MetaDef {
-	  uint8_t flags;
-	  uint16_t updatePeriod;
-	};
-	//virtual UAVLinkObject* instance() = 0;
+            enum META_FLAGS {
+              TELEMETRY_ACKED_SHIFT,
+              TELEMETRY_UPDATEON_SHIFT
+            };
 
-	//bool connect(UAVLinkListener* listener);
-	bool connect(os::Queue* queue, uint8_t evMask);
+            struct UAVLinkEvent {
+                UAVLinkObject* obj;
+                UAVLinkObject::EVENT_TYPE event;
+            };
 
-	bool telemetryIsAcked();
-	UPDATE_MODE telemetryUpdateMode();
-	uint16_t telemetryUpdatePeriod();
+            struct MetaDef {
+              uint8_t flags;
+              uint16_t updatePeriod;
+            };
+            //virtual UAVLinkObject* instance() = 0;
 
-	void pack(uint8_t *out);
-	void unpack(const uint8_t *in);
+            bool connect(UAVLinkCallbackListener* listener);
+            bool connect(os::Queue* queue, uint8_t evMask);
 
-	static UAVLinkObjectList* getRegistredObjects();
-	static UAVLinkObject* getById(uint32_t id);
+            bool telemetryIsAcked();
+            UPDATE_MODE telemetryUpdateMode();
+            uint16_t telemetryUpdatePeriod();
 
-	uint16_t length() {
-	  return _mSize;
-	}
+            void pack(uint8_t *out);
+            void unpack(const uint8_t *in);
 
-	const char* getName() {
-	  return _mName;
-	}
+            static UAVLinkObjectList* getRegistredObjects();
+            static UAVLinkObject* getById(uint32_t id);
 
-	uint32_t getId() {
-	  return _mId;
-	}
+            uint16_t length() {
+              return _mSize;
+            }
 
-protected:
-	UAVLinkObject(const char* name, uint32_t objid, bool isSettings, uint16_t size);
-	void dispatchEvent(EVENT_TYPE type);
+            const char* getName() {
+              return _mName;
+            }
 
-	virtual void toBytes(uint8_t *out) = 0;
-	virtual void fromBytes(const uint8_t *in) = 0;
+            uint32_t getId() {
+              return _mId;
+            }
 
-	xSemaphoreHandle mutex;
-	MetaDef meta;
+        protected:
+            UAVLinkObject(const char* name, uint32_t objid, bool isSettings, uint16_t size);
+            void dispatchEvent(EVENT_TYPE type);
 
-private:
-	struct ObjectEvent {
-	  os::Queue* queue;
-	  uint8_t event;
-	};
+            virtual void toBytes(uint8_t *out) = 0;
+            virtual void fromBytes(const uint8_t *in) = 0;
 
-	util::List<ObjectEvent*> _mEvents;
-	uint32_t _mId;
-	bool _mIsSettings;
-	const char* _mName;
-	uint16_t _mSize;
+            xSemaphoreHandle mutex;
+            MetaDef meta;
 
-	static UAVLinkObjectList _objRegistred;
+        private:
+            struct ObjectEvent {
+              os::Queue* queue;
+              UAVLinkCallbackListener* cb;
+              uint8_t event;
+            };
 
-};
+            util::List<ObjectEvent*> _mEvents;
+            uint32_t _mId;
+            bool _mIsSettings;
+            const char* _mName;
+            uint16_t _mSize;
 
-struct UAVLinkEvent {
-	UAVLinkObject* obj;
-	UAVLinkObject::EVENT_TYPE event;
-};
+            static UAVLinkObjectList _objRegistred;
+
+    };
+
 
 } /* namespace obj */
 

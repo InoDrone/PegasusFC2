@@ -16,7 +16,7 @@ using namespace obj;
 
 TelemetryTX::TelemetryTX()  :
   Thread("TelemetryTX", TASK_PRIORITY),
-  queue(QUEUE_SIZE, sizeof(UAVLinkEvent)) {}
+  queue(QUEUE_SIZE, sizeof(UAVLinkObject::UAVLinkEvent)) {}
 
 void TelemetryTX::init(UAVLink::Instance* ulink)
 {
@@ -32,7 +32,7 @@ void TelemetryTX::init(UAVLink::Instance* ulink)
           object->connect(&queue, UAVLinkObject::EVENT_UPDATED);
           TELEMETRY_PORT::write(" (ONCHANGE)");
       } else if (object->telemetryUpdateMode() == UAVLinkObject::UPDATEMODE_PERIODIC) {
-          UAVLinkEvent event;
+          UAVLinkObject::UAVLinkEvent event;
           event.obj = object;
           event.event = UAVLinkObject::EVENT_PERIODIC;
           TELEMETRY_PORT::write(" (PERIODIC)");
@@ -47,7 +47,7 @@ void TelemetryTX::init(UAVLink::Instance* ulink)
 
 void TelemetryTX::run()
 {
-    UAVLinkEvent event;
+    UAVLinkObject::UAVLinkEvent event;
     while(1) {
         if (queue.receive(&event, portMAX_DELAY)) {
             processEvent(&event);
@@ -55,7 +55,7 @@ void TelemetryTX::run()
     }
 }
 
-void TelemetryTX::processEvent(obj::UAVLinkEvent* event) {
+void TelemetryTX::processEvent(UAVLinkObject::UAVLinkEvent* event) {
   obj::UAVLinkObject* obj = event->obj;
 
   bool success = false;

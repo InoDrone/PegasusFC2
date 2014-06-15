@@ -282,12 +282,11 @@ namespace os {
       // set system clocks
       while (!setReg(MPU6000_RA_PWR_MGMT_1, MPU6000_CLOCK_PLL_ZGYRO));
 
+      setRanges(_config.accelScale, _config.gyroScale, _config.filter);
 
       /* Enable INT DRDY */
       while (!setReg(MPU6000_RA_INT_PIN_CFG, 0x10)); // 0x10 INT_RD_CLEAR = 1 other 0
       while (!setReg(MPU6000_RA_INT_ENABLE, 0x01)); // Enable DRDY INT
-
-      setRanges(_config.accelScale, _config.gyroScale, _config.filter);
 
       if ((getReg(MPU6000_RA_INT_ENABLE)) != 0x01) {
           return;
@@ -410,6 +409,9 @@ namespace os {
           datas.bytes[i+1] = t;
           i += 2;
       }
+
+      datas.val.acc.z *= -1;
+      datas.val.gyro.z *= -1;
 
       signed portBASE_TYPE higherPriorityTaskWoken;
       queue.sendFromISR(&datas.val, &higherPriorityTaskWoken);

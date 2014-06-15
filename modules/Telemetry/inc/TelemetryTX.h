@@ -27,7 +27,7 @@ class TelemetryTX : public os::Thread, public UAVLinkListener
     os::Queue queue;
     UAVLink::Instance* uavlink;
 
-    void processEvent(obj::UAVLinkEvent* event);
+    void processEvent(obj::UAVLinkObject::UAVLinkEvent* event);
 };
 
 #endif /* TELEMETRY_H_ */

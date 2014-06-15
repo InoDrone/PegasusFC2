@@ -39,6 +39,14 @@ namespace os {
 		extern void DMA1_Stream6_IRQ(void);
 
 		extern void EXTx_IRQ(void);
+
+		extern void TIM1_CC_Irq(void);
+		extern void TIM2_Irq(void);
+		extern void TIM3_Irq(void);
+		extern void TIM4_Irq(void);
+        extern void TIM5_Irq(void);
+        extern void TIM6_Irq(void);
+        extern void TIM7_Irq(void);
 	}
 
 	__attribute__((section(".cpu_vectors")))
@@ -126,13 +134,13 @@ namespace os {
 			/* TIM1_TRG_COM_TIM11_IRQHandler    TIM1 Trigger and Commutation and TIM11     */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* TIM1_CC_IRQHandler               TIM1 Capture/Compare INT    */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::TIM1_CC_Irq),
 			/* TIM2_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::TIM2_Irq),
 			/* TIM3_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::TIM3_Irq),
 			/* TIM4_IRQHandler */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::TIM4_Irq),
 			/* I2C1_EV_IRQHandler */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* I2C1_ER_IRQHandler */
@@ -172,7 +180,7 @@ namespace os {
 			/* SDIO_IRQHandler  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* TIM5_IRQHandler  */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::TIM5_Irq),
 			/* SPI3_IRQHandler  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* UART4_IRQHandler  */
@@ -182,7 +190,7 @@ namespace os {
 			/* TIM6_DAC_IRQHandler  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* TIM7_IRQHandler  */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::TIM7_Irq),
 			/* DMA2_Stream0_IRQHandler  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* DMA2_Stream1_IRQHandler  */

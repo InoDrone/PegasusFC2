@@ -11,6 +11,7 @@
 
 #include "UAVLinkObject.h"
 #include "UAVLinkListener.h"
+#include "UAVLinkCallbackListener.h"
 #include "UAVLinkPeriodic.h"
 #include "UAVLinkObjectsInclude.h"
 

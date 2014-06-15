@@ -11,6 +11,7 @@
 extern int              main(void) __attribute__((noreturn));
 extern "C" {
 	void _start() {}
+	void *__dso_handle;
 }
 
 namespace os {
@@ -58,6 +59,9 @@ namespace hal {
 
 	    /* Init delay */
 	    os::hal::Delay::init();
+
+	    /* Flash init */
+	    os::hal::FSFlash::init();
 	}
 
 	void System::reset() {

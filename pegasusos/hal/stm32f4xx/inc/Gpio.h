@@ -104,12 +104,12 @@ namespace os {
 			template<Address P, u8 N>
 			void Pin<P, N>::setAlternateFunction(uint8_t AF) {
 				GPIO_TypeDef* reg = reinterpret_cast<GPIO_TypeDef*>(P);
-			          uint32_t current = reg->AFR[N >> 0x03];
+			          /*uint32_t current = reg->AFR[N >> 0x03];
 			          current &= ~((uint32_t)0xF << ((uint32_t)((uint32_t)N & (uint32_t)0x07) * 4)); // reset pin AF
 			          current |=  ((uint32_t)AF << ((uint32_t)((uint32_t)N & (uint32_t)0x07) * 4)); // Set AF mode
 
-			          reg->AFR[N >> 0x03] = current; // Save to register
-				//GPIO_PinAFConfig(reg, N, AF);
+			          reg->AFR[N >> 0x03] = current; // Save to register*/
+				GPIO_PinAFConfig(reg, N, AF);
 
 			}
 

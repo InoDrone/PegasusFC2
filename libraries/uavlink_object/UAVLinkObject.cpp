@@ -33,21 +33,41 @@ namespace obj {
 	  while(_mEvents.hasNext()) {
 		ObjectEvent *event = _mEvents.next();
 		if ((event->event & type) != 0) {
-		    event->queue->send(&eventMsg, 0);
+		    if (event->queue) {
+		        event->queue->send(&eventMsg, 0);
+		    }
+
+		    if (event->cb) {
+		        // TODO: use delayed callback to other task queue
+		        event->cb->uavlinkHandle(&eventMsg);
+		    }
 		}
 	  }
 	}
 
 	// Connect with UAVLinkListener
-	/*bool UAVLinkObject::connect(UAVLinkListener* listener)
+	bool UAVLinkObject::connect(UAVLinkCallbackListener* listener)
 	{
-	  return false;
-	}*/
+	      ObjectEvent* event = new ObjectEvent;
+	      event->cb = listener;
+	      event->queue = 0;
+	      event->event = EVENT_UPDATED | EVENT_RECEIVED;
+
+	      xSemaphoreTakeRecursive(mutex, portMAX_DELAY);
+	      if (!_mEvents.append(event)) {
+	          xSemaphoreGiveRecursive(mutex);
+	          return false;
+	      }
+
+	      xSemaphoreGiveRecursive(mutex);
+	      return true;
+	}
 
 	// Connect with xQueueHandle
 	bool UAVLinkObject::connect(os::Queue* queue, uint8_t evMask) {
 	  ObjectEvent* event = new ObjectEvent;
 	  event->queue = queue;
+	  event->cb = 0;
 	  event->event = evMask;
 
 	  xSemaphoreTakeRecursive(mutex, portMAX_DELAY);

@@ -69,7 +69,7 @@ namespace os
                 struct SlotHeader {
                         SlotState state;
                         uint32_t id;
-                        uint16_t size;
+                        uint32_t size;
                 } __attribute__((packed));
 
                 struct ArenaHeader {

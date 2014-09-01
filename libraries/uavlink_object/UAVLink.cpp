@@ -15,9 +15,10 @@
 #define TYPE_VERSION	0x08
 #define TYPE_OBJ	    (TYPE_VERSION | 0x00)
 #define TYPE_OBJ_ACK    (TYPE_VERSION | 0x01)
-#define TYPE_ACK	    (TYPE_VERSION | 0x02)
-#define TYPE_NACK	    (TYPE_VERSION | 0x03)
-#define TYPE_META	    (TYPE_VERSION | 0x04)
+#define TYPE_OBJ_REQ    (TYPE_VERSION | 0x02)
+#define TYPE_ACK	    (TYPE_VERSION | 0x03)
+#define TYPE_NACK	    (TYPE_VERSION | 0x04)
+#define TYPE_META	    (TYPE_VERSION | 0x05)
 
 #define HEADER_SIZE	9
 
@@ -90,7 +91,7 @@ UAVLink::RxStats UAVLink::processInput(Instance* inst, uint8_t byte) {
           break;
       }
 
-      in->psize += byte << 8;
+      in->psize += (byte << 8);
       in->rxCount = 0;
 
       if (in->psize < HEADER_SIZE) {
@@ -128,7 +129,7 @@ UAVLink::RxStats UAVLink::processInput(Instance* inst, uint8_t byte) {
           break;
       }
 
-      if (in->type == TYPE_ACK || in->type == TYPE_NACK) {
+      if (in->type == TYPE_ACK || in->type == TYPE_NACK || in->type == TYPE_OBJ_REQ) {
         in->length = 0;
       } else {
         in->length = object->length();
@@ -197,6 +198,13 @@ bool UAVLink::receiveObject(Instance* inst, uint8_t type, uint32_t id, uint8_t *
             error = true;
         }
         break;
+    case TYPE_OBJ_REQ:
+        if (object) {
+            send(inst, TYPE_OBJ, object);
+        } else {
+            error = true;
+        }
+        break;
     case TYPE_ACK:
         if (object) {
             updateAck(inst, type, id);
@@ -224,14 +232,14 @@ bool UAVLink::startObjectTransaction(Instance* inst, obj::UAVLinkObject* obj, ui
 {
    bool success = false;
    int32_t ackReceived;
-   if (type == TYPE_OBJ_ACK) {
+   if (type == TYPE_OBJ_ACK || type == TYPE_OBJ_REQ) {
        xSemaphoreTakeRecursive(inst->transactionLock, portMAX_DELAY);
        xSemaphoreTakeRecursive(inst->lock, portMAX_DELAY);
 
        success = send(inst, type, obj);
        xSemaphoreGiveRecursive(inst->lock);
        inst->response.id = obj->getId();
-       inst->response.type = TYPE_ACK; // ORD TYPE_OBJ
+       inst->response.type = (type == TYPE_OBJ_REQ) ? TYPE_OBJ : TYPE_ACK;
        if (success) {
            // Wait for receive ACK
            ackReceived = xSemaphoreTake(inst->ackSema, timeout / portTICK_RATE_MS);
@@ -275,7 +283,7 @@ bool UAVLink::send(Instance* inst, uint8_t type, obj::UAVLinkObject* obj)
   headerLength = 9;
 
   uint16_t length;
-  if (type == TYPE_ACK || type == TYPE_NACK) {
+  if (type == TYPE_ACK || type == TYPE_NACK || type == TYPE_OBJ_REQ) {
       length = 0;
   } else {
       length = obj->length();

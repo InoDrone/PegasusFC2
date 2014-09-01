@@ -22,39 +22,39 @@ namespace os {
       typedef bool (*DMAISRCallback)();
 
       enum DMA {
-	DMA_1 = DMA1_BASE,
-	DMA_2 = DMA2_BASE
+        DMA_1 = DMA1_BASE,
+        DMA_2 = DMA2_BASE
       };
       enum StreamAddress {
-	  STREAM0 = 0x010,
-	  STREAM1 = 0x028,
-	  STREAM2 = 0x040,
-	  STREAM3 = 0x058,
-	  STREAM4 = 0x070,
-	  STREAM5 = 0x088,
-	  STREAM6 = 0x0A0,
-	  STREAM7 = 0x0B8
+          STREAM0 = 0x010,
+          STREAM1 = 0x028,
+          STREAM2 = 0x040,
+          STREAM3 = 0x058,
+          STREAM4 = 0x070,
+          STREAM5 = 0x088,
+          STREAM6 = 0x0A0,
+          STREAM7 = 0x0B8
       };
 
       template<DMA D, StreamAddress S>
       class Stream {
-	public:
-	  static inline void init(DMA_InitTypeDef);
-	  static inline uint16_t getCurrDataCounter();
-	  static inline void setCurrDataCounter(uint16_t);
+        public:
+          static inline void init(DMA_InitTypeDef);
+          static inline uint16_t getCurrDataCounter();
+          static inline void setCurrDataCounter(uint16_t);
 
-	  static inline void enable();
-	  static inline void disable();
+          static inline void enable();
+          static inline void disable();
 
-	  static inline void enableInterupt(DMAISRCallback, uint32_t interruptMask, uint8_t priority);
+          static inline void enableInterupt(DMAISRCallback, uint32_t interruptMask, uint8_t priority);
 
-	  static void handle();
+          static void handle();
 
-	  static inline DMA_Stream_TypeDef* getReg();
+          static inline DMA_Stream_TypeDef* getReg();
 
-	private:
-	  static DMA_InitTypeDef _sInit;
-	  static volatile DMAISRCallback _sISRCallback;
+        private:
+          static DMA_InitTypeDef _sInit;
+          static volatile DMAISRCallback _sISRCallback;
       };
 
       template<DMA D, StreamAddress S>
@@ -65,42 +65,42 @@ namespace os {
 
       template<DMA D, StreamAddress S>
       void Stream<D,S>::init(DMA_InitTypeDef init) {
-	DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
-	switch(D) {
-	  case DMA_1:
-	    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
-	    break;
-	  case DMA_2:
-	    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-	    break;
-	}
+        DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
+        switch(D) {
+          case DMA_1:
+            RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
+            break;
+          case DMA_2:
+            RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+            break;
+        }
 
-	DMA_DeInit(reg);
-	DMA_Init(reg, &init);
+        DMA_DeInit(reg);
+        DMA_Init(reg, &init);
 
-	_sInit = init;
+        _sInit = init;
       }
 
       template<DMA D, StreamAddress S>
-	uint16_t Stream<D,S>::getCurrDataCounter() {
-	return ((uint16_t)(reinterpret_cast<DMA_Stream_TypeDef*>(D + S)->NDTR));
+      uint16_t Stream<D,S>::getCurrDataCounter() {
+        return ((uint16_t)(reinterpret_cast<DMA_Stream_TypeDef*>(D + S)->NDTR));
       }
 
       template<DMA D, StreamAddress S>
       void Stream<D,S>::setCurrDataCounter(uint16_t c) {
-	reinterpret_cast<DMA_Stream_TypeDef*>(D + S)->NDTR = c;
+        reinterpret_cast<DMA_Stream_TypeDef*>(D + S)->NDTR = c;
       }
 
       template<DMA D, StreamAddress S>
       void Stream<D,S>::enable() {
-	DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
-	DMA_Cmd(reg, ENABLE);
+        DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
+        DMA_Cmd(reg, ENABLE);
       }
 
       template<DMA D, StreamAddress S>
       void Stream<D,S>::disable() {
-	DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
-	DMA_Cmd(reg, DISABLE);
+        DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
+        DMA_Cmd(reg, DISABLE);
       }
 
       template<DMA D, StreamAddress S>
@@ -189,31 +189,34 @@ namespace os {
 
       template<DMA D, StreamAddress S>
       void Stream<D,S>::handle() {
-	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+        portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-	DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
-	switch(S) {
-	  case STREAM3:
-	    DMA_ClearFlag(reg, DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3 | DMA_FLAG_FEIF3 );
-	    break;
-	  case STREAM6:
-	    DMA_ClearFlag(reg, DMA_FLAG_TCIF6 | DMA_FLAG_HTIF6 | DMA_FLAG_TEIF6 | DMA_FLAG_DMEIF6 | DMA_FLAG_FEIF6 );
-	    break;
-	  default:
-	    break;
-	}
+        DMA_Stream_TypeDef* reg = reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
+        switch(S) {
+          case STREAM3:
+            DMA_ClearFlag(reg, DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3 | DMA_FLAG_FEIF3 );
+            break;
+          case STREAM6:
+            DMA_ClearFlag(reg, DMA_FLAG_TCIF6 | DMA_FLAG_HTIF6 | DMA_FLAG_TEIF6 | DMA_FLAG_DMEIF6 | DMA_FLAG_FEIF6 );
+            break;
+          case STREAM7:
+            DMA_ClearFlag(reg, DMA_FLAG_TCIF7 | DMA_FLAG_HTIF7 | DMA_FLAG_TEIF7 | DMA_FLAG_DMEIF7 | DMA_FLAG_FEIF7 );
+            break;
+          default:
+            break;
+        }
 
 
-	if (_sISRCallback) {
-	    xHigherPriorityTaskWoken = _sISRCallback() ? pdTRUE : xHigherPriorityTaskWoken;
-	}
+        if (_sISRCallback) {
+            xHigherPriorityTaskWoken = _sISRCallback() ? pdTRUE : xHigherPriorityTaskWoken;
+        }
 
-	portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+        portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
       }
 
       template<DMA D, StreamAddress S>
       DMA_Stream_TypeDef* Stream<D,S>::getReg() {
-	return reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
+        return reinterpret_cast<DMA_Stream_TypeDef*>(D + S);
       }
 
     } /* end namespace dma */

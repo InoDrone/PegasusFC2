@@ -29,14 +29,14 @@ using namespace obj;
     while(_mObjectList.hasNext()) {
 	UAVLinkPeriodicEvent* pev = _mObjectList.next();
 
-	if (pev->queue == queue &&
-	    pev->ev.event == ev->event &&
-	    pev->ev.obj == ev->obj) {
+        if (pev->queue == queue &&
+            pev->ev.event == ev->event &&
+            pev->ev.obj == ev->obj) {
 
-	    xSemaphoreGiveRecursive(mutex);
+            xSemaphoreGiveRecursive(mutex);
 
-	    return false;
-	}
+            return false;
+        }
     }
 
     entry = new UAVLinkPeriodicEvent;

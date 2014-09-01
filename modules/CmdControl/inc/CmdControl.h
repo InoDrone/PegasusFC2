@@ -26,6 +26,7 @@ class CmdControl : public os::Thread,
     private:
         obj::ControlCommand* controlCommand;
         uint32_t lastTime;
+        obj::ControlCommandSettings::Datas settings;
 
         float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral);
         void updateAttitudeDesired(obj::ControlCommand::Datas *cmd);

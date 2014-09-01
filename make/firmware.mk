@@ -49,7 +49,8 @@ INCLUDEDIRS += $(HALINCDIR)
 INCLUDEDIRS += $(foreach mod, $(MODULES), $(MODULEDIR)/$(mod)/inc)
 
 # Libs
-EXTRA_LIBS += m stdc++ supc++
+EXTRA_LIBS += m 
+#stdc++ supc++
 
 ifeq ($(MCU),cortex-m4)
     LDFLAGS += $(addprefix -T,$(LINKER_SCRIPTS))

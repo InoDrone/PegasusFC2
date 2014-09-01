@@ -18,12 +18,17 @@ CmdControl::CmdControl () :
 void CmdControl::init()
 {
     controlCommand = ControlCommand::instance();
+    ControlCommandSettings::instance();
     AttitudeDesired::instance();
 
     os::Receiver::attach<RC1>(0); // Throttle
     os::Receiver::attach<RC2>(1); // Roll
     os::Receiver::attach<RC3>(2); // Pitch
     os::Receiver::attach<RC4>(3); // Yaw
+
+    settings = ControlCommandSettings::instance()->get();
+
+    ControlCommandSettings::instance()->connect(this);
 }
 
 void CmdControl::run()
@@ -39,7 +44,7 @@ void CmdControl::run()
 
         for (uint8_t i = 0; i < 8; i++) {
             cmd.Channel[i] = os::Receiver::raw(i);
-            channels[i] = scaleChannel(cmd.Channel[i], 2000, 1000, 1500);
+            channels[i] = scaleChannel(cmd.Channel[i], settings.ChannelMax[i], settings.ChannelMin[i], settings.ChannelNeutral[i]);
         }
 
         cmd.Throttle = channels[0];
@@ -53,9 +58,16 @@ void CmdControl::run()
     }
 }
 
-void  CmdControl::uavlinkHandle(__attribute__((unused)) void *params)
+void  CmdControl::uavlinkHandle(void *params)
 {
+    UAVLinkObject::UAVLinkEvent* event = reinterpret_cast<UAVLinkObject::UAVLinkEvent*>(params);
+    if (event == NULL) {
+        return;
+    }
 
+    if (event->obj->getId() == CONTROLCOMMANDSETTINGS_ID) {
+        settings = ControlCommandSettings::instance()->get();
+    }
 }
 
 float CmdControl::scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral)
@@ -88,11 +100,11 @@ float CmdControl::scaleChannel(int16_t value, int16_t max, int16_t min, int16_t 
 void CmdControl::updateAttitudeDesired(ControlCommand::Datas *cmd)
 {
     AttitudeDesired::Datas att = AttitudeDesired::instance()->get();
-    StabSettings::Datas settings = StabSettings::instance()->get();
+    StabSettings::Datas stabSettings = StabSettings::instance()->get();
 
-    att.Pitch = cmd->Pitch * settings.TiltMax;
-    att.Roll = cmd->Roll * settings.TiltMax;
-    att.Yaw = cmd->Yaw * settings.YawMax;
+    att.Pitch = cmd->Pitch * stabSettings.TiltMax;
+    att.Roll = cmd->Roll * stabSettings.TiltMax;
+    att.Yaw = cmd->Yaw * 175; // TODO: add to settings
 
     att.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
 

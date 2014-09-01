@@ -14,6 +14,7 @@ FS_SECTOR_SIZE		:= 0x00020000
 # Module to compile
 #MODULES += Sensors
 MODULES += Attitude
+MODULES += Altitude
 MODULES += Stablization
 MODULES += CmdControl
 MODULES += Telemetry
@@ -21,7 +22,7 @@ MODULES += Telemetry
 CFLAGS += -ffast-math
 
 CPPSRC += $(HALDIR)/boards.cpp
-CPPSRC += $(HALDIR)/pegasusv2b.cpp
+CPPSRC += $(HALDIR)/pegasusv2.cpp
 
 SRC += $(sort $(wildcard $(LIBRARYDIR)/uavlink_object/*.c))
 CPPSRC += $(sort $(wildcard $(LIBRARYDIR)/uavlink_object/*.cpp))

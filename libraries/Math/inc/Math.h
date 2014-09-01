@@ -10,6 +10,7 @@
 
 #include <cinttypes>
 #include <cmath>
+#include "Vector3.h"
 
 // Generic float math constants
 #define M_E_F        2.71828182845904523536028747135f      /* e */
@@ -72,9 +73,12 @@ class Math {
         static void filterInit(filter_t *f, float fe);
         static float filter(filter_t *f, float v, float G_Dt);
         static float filter(float current, float previous, float factor);
+        static void filter(math::Vector3f current, math::Vector3f *previous, float factor);
 
         static void RPY2Quaternion(const float rpy[3], float q[4]);
         static void quaternion2RPY(const float q[4], float rpy[3]);
+
+        static float InvSqrt (float x);
 };
 
 

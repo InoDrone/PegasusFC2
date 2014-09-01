@@ -14,10 +14,10 @@ using namespace obj;
 
 float quadX[4][3] = {
         //ROLL | PITCH | YAW
-        {  0.5, -0.5, -0.5 }, // Front Left , M1 , 0
-        { -0.5, -0.5,  0.5 }, // Front right, M2 , 1
-        { -0.5, 0.5, -0.5 }, // Rear Right , M3 , 2
-        {  0.5, 0.5,  0.5 } // Rear Left   , M4 , 3
+        {  0.5, 0.5, 0.5 }, // Front Left , M1 , 0
+        { -0.5, 0.5, -0.5 }, // Front right, M2 , 1
+        { -0.5, -0.5, 0.5 }, // Rear Right , M3 , 2
+        {  0.5, -0.5, -0.5 } // Rear Left   , M4 , 3
 };
 
 Stablization::Stablization () :
@@ -54,7 +54,6 @@ void Stablization::run()
     while (1) {
 
         if (!gyroQueue.receive(&ev, 30 / portTICK_RATE_MS)) {
-            os::hal::PE3::low();
             continue;
         }
 
@@ -71,6 +70,7 @@ void Stablization::run()
         attDesired = AttitudeDesired::instance()->get();
         attitude = AttitudeState::instance()->get();
         gyro = GyroSensor::instance()->get();
+
 
         float attError[3] = {
                 attDesired.Roll - attitude.Roll,
@@ -95,7 +95,7 @@ void Stablization::run()
 
         stabDesired.Roll = rollPID.calculate(attError[0], filteredGyro[0], G_Dt, PID_CASCADING);
         stabDesired.Pitch = pitchPID.calculate(attError[1], filteredGyro[1], G_Dt, PID_CASCADING);
-        stabDesired.Yaw = 0;//yawPID.calculate(attError[2], filteredGyro[2], G_Dt, PID_CASCADING);
+        stabDesired.Yaw = yawPID.calculate(attDesired.Yaw, -filteredGyro[2], G_Dt, PID_YAW_MANUAL);
 
 
         stabDesired.Throttle = attDesired.Throttle;
@@ -109,6 +109,11 @@ void Stablization::run()
         M1 = M2 = M3 = M4 = 1000; // Min PWM VAL
 
         if (!isArmed) {
+
+            rollPID.reset();
+            pitchPID.reset();
+            yawPID.reset();
+
             MOTOR1::write(1000);
             MOTOR2::write(1000);
             MOTOR3::write(1000);
@@ -132,10 +137,10 @@ void Stablization::run()
                     (quadX[3][1] * stabDesired.Pitch) +
                     (quadX[3][2] * stabDesired.Yaw);
 
-            M1 = scaleChannel(C[0], 1700, 1000, 1300);
-            M2 = scaleChannel(C[1], 1700, 1000, 1300);
-            M3 = scaleChannel(C[2], 1700, 1000, 1300);
-            M4 = scaleChannel(C[3], 1700, 1000, 1300);
+            M1 = scaleChannel(C[0], 1900, 1000, 1200);
+            M2 = scaleChannel(C[1], 1900, 1000, 1200);
+            M3 = scaleChannel(C[2], 1900, 1000, 1200);
+            M4 = scaleChannel(C[3], 1900, 1000, 1200);
 
 
             MOTOR1::write(M1);
@@ -156,7 +161,6 @@ void Stablization::uavlinkHandle(void *params) {
     }
 
     if (event->obj->getId() == STABSETTINGS_ID) {
-        os::hal::PE3::toggle();
         settings = StabSettings::instance()->get();
 
 

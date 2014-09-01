@@ -47,6 +47,10 @@ private:
   float accelKp;
   float q[4];
 
+  float zVelocity;
+
+  math::Vector3f accFiltered;
+
   bool updateSensors(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Datas *gyroDatas);
   bool update(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Datas *gyroDatas, float G_Dt);
 };

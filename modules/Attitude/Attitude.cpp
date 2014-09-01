@@ -11,11 +11,14 @@
 #define TASK_PRIORITY (tskIDLE_PRIORITY + 3)
 #define FAILSAFE_TIMEOUT_MS       10
 
+#define GRAVITY 9.81f
+
 using namespace obj;
 
 Attitude::Attitude () :
   Thread("Attitude", TASK_PRIORITY, STACK_SIZE_BYTES / 4),
-  dcm() {}
+  dcm(),
+  accFiltered() {}
 
 void Attitude::init()
 {
@@ -40,6 +43,8 @@ void Attitude::init()
     gyroCorrectBias[1] = 0;
     gyroCorrectBias[2] = 0;
 
+    zVelocity = 0;
+
 
     /*accQueue.create(1, sizeof(UAVLinkObject::UAVLinkEvent));
     gyroQueue.create(1, sizeof(UAVLinkObject::UAVLinkEvent));
@@ -48,6 +53,10 @@ void Attitude::init()
     gyro->connect(&gyroQueue, UAVLinkObject::EVENT_UPDATED);*/
 
     attitudeSettings->connect(this);
+
+    UAVLinkObject::UAVLinkEvent event;
+    event.obj = AttitudeSettings::instance();
+    uavlinkHandle(&event);
 }
 
 void Attitude::run()
@@ -130,32 +139,38 @@ bool Attitude::updateSensors(AccelSensor::Datas *accelDatas, GyroSensor::Datas *
 
     /* Accel values scaling - offset */
     accelDatas->x = (float)accAccum[0] / mpuSample;
-    accelDatas->x =  accelDatas->x * accScaling - settings.AccelBias.X;
-    //accelDatas->x *= -1; // Reverse
+    accelDatas->x =  ((accelDatas->x * accScaling) * -1);
 
     accelDatas->y = (float)accAccum[1] / mpuSample;
-    accelDatas->y = accelDatas->y * accScaling - settings.AccelBias.Y;
+    accelDatas->y = accelDatas->y * accScaling;
     //accelDatas->y *= -1; // Reverse
 
     accelDatas->z = (float)accAccum[2] / mpuSample;
-    accelDatas->z = accelDatas->z * accScaling - settings.AccelBias.Z;
+    accelDatas->z = accelDatas->z * accScaling;
 
 
     /* Gyro values scaling - offset */
     gyroDatas->x = (float)gyroAccum[0] / mpuSample;
     gyroDatas->x = (gyroDatas->x * gyroScaling);// - settings.GyroBias.X;
     gyroDatas->x *= -1;
-    gyroDatas->x += gyroCorrectBias[0];
 
     gyroDatas->y = (float)gyroAccum[1] / mpuSample;
     gyroDatas->y = (gyroDatas->y * gyroScaling);// - settings.GyroBias.Y;
-    gyroDatas->y *= -1;
-    gyroDatas->y += gyroCorrectBias[1];
+    //gyroDatas->y *= -1;
 
     gyroDatas->z = (float)gyroAccum[2] / mpuSample;
     gyroDatas->z = (gyroDatas->z * gyroScaling);// - settings.GyroBias.Z;
-    gyroDatas->z += gyroCorrectBias[2];
 
+
+    if (settings.enableBias == 1) {
+        accelDatas->x -= settings.AccelBias.X;
+        accelDatas->y -= settings.AccelBias.Y;
+        accelDatas->z -= settings.AccelBias.Z;
+
+        gyroDatas->x += gyroCorrectBias[0];
+        gyroDatas->y += gyroCorrectBias[1];
+        gyroDatas->z += gyroCorrectBias[2];
+    }
 
     gyroCorrectBias[0] += -gyroDatas->x * gyroBiasRate;
     gyroCorrectBias[1] += -gyroDatas->y * gyroBiasRate;
@@ -171,7 +186,7 @@ bool Attitude::updateSensors(AccelSensor::Datas *accelDatas, GyroSensor::Datas *
 
 bool Attitude::update(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Datas *gyroDatas, float G_Dt)
 {
-    math::Vector3f grot, accErr;
+    math::Vector3f grot, accErr;//, accEarth;
 
     math::Vector3f vAccel;
     vAccel.x = accelDatas->x;
@@ -186,14 +201,20 @@ bool Attitude::update(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Data
         G_Dt = 0.001f;
     }
 
-    // TODO: acc filter
+    // Filter Accel
+    float accAlpha = (settings.AccFilter == 0 || settings.AccFilter < 0.0001f) ? 0 : expf(-G_Dt / settings.AccFilter);
+    Math::filter(vAccel, &accFiltered, accAlpha);
 
+    // Rotate Gravity
     grot.x = -(2 * (q[1] * q[3] - q[0] * q[2]));
     grot.y = -(2 * (q[2] * q[3] + q[0] * q[1]));
     grot.z = -(q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
 
     // TODO: grot filter
-    accErr = vAccel % grot; // Cross Product Vector3
+    accErr = accFiltered % grot; // Cross Product Vector3
+
+    //accEarth = grot * vAccel; // Dot product
+
 
     float accMag = vAccel.length();
     if (accMag < 1.0e-3f) {
@@ -204,6 +225,8 @@ bool Attitude::update(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Data
     accErr.y /= accMag;
     accErr.z /= accMag;
 
+    zVelocity += (accErr.z * G_Dt);
+
     gyroCorrectBias[0] += accErr.x * accelKi;
     gyroCorrectBias[1] += accErr.y * accelKi;
 
@@ -213,10 +236,10 @@ bool Attitude::update(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Data
 
     {
         float qdot[4];
-        qdot[0] = (-q[1] * gyroDatas->x - q[2] * gyroDatas->y - q[3] * gyroDatas->z) * G_Dt * (M_PI_F / 180.0f / 2.0f);
-        qdot[1] = (q[0] * gyroDatas->x - q[3] * gyroDatas->y + q[2] * gyroDatas->z) * G_Dt * (M_PI_F / 180.0f / 2.0f);
-        qdot[2] = (q[3] * gyroDatas->x + q[0] * gyroDatas->y - q[1] * gyroDatas->z) * G_Dt * (M_PI_F / 180.0f / 2.0f);
-        qdot[3] = (-q[2] * gyroDatas->x + q[1] * gyroDatas->y + q[0] * gyroDatas->z) * G_Dt * (M_PI_F / 180.0f / 2.0f);
+        qdot[0] = DEG2RAD(-q[1] * gyroDatas->x - q[2] * gyroDatas->y - q[3] * gyroDatas->z) * G_Dt / 2;
+        qdot[1] = DEG2RAD(q[0] * gyroDatas->x - q[3] * gyroDatas->y + q[2] * gyroDatas->z) * G_Dt / 2;
+        qdot[2] = DEG2RAD(q[3] * gyroDatas->x + q[0] * gyroDatas->y - q[1] * gyroDatas->z) * G_Dt / 2;
+        qdot[3] = DEG2RAD(-q[2] * gyroDatas->x + q[1] * gyroDatas->y + q[0] * gyroDatas->z) * G_Dt / 2;
 
         // Take a time step
         q[0]    = q[0] + qdot[0];
@@ -234,19 +257,18 @@ bool Attitude::update(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Data
 
     // Renomalize
     float qmag = sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+    q[0] = q[0] / qmag;
+    q[1] = q[1] / qmag;
+    q[2] = q[2] / qmag;
+    q[3] = q[3] / qmag;
 
     // If quaternion has become inappropriately short or is nan reinit.
     // THIS SHOULD NEVER ACTUALLY HAPPEN
-    if ((fabsf(qmag) < 1e-3f) || std::isnan(qmag)) {
-        q[0] = 1;
-        q[1] = 0;
-        q[2] = 0;
-        q[3] = 0;
-    } else {
-        q[0] = q[0] / qmag;
-        q[1] = q[1] / qmag;
-        q[2] = q[2] / qmag;
-        q[3] = q[3] / qmag;
+    if ((fabsf(qmag) < 1.0e-3f) || std::isnan(qmag)) {
+        q[0] = 1.0f;
+        q[1] = 0.0f;
+        q[2] = 0.0f;
+        q[3] = 0.0f;
     }
 
     attitude.q1 = q[0];
@@ -255,6 +277,7 @@ bool Attitude::update(obj::AccelSensor::Datas *accelDatas, obj::GyroSensor::Data
     attitude.q4 = q[3];
     Math::quaternion2RPY(&attitude.q1, &attitude.Roll);
 
+    attitude.zVelocity = zVelocity;
     attitude.G_Dt = G_Dt;
     attitudeState->set(attitude);
 

@@ -21,7 +21,7 @@ namespace obj {
                    float z;
                    float temperature;
 
-            };// __attribute__((packed)) Datas;
+            } __attribute__((packed));
             
             // Functions
             
@@ -34,7 +34,7 @@ namespace obj {
             void fromBytes(const uint8_t *in);
             
         private:
-            Datas datas;
+            /*alignas(4)*/ Datas datas;
             
             AccelSensor();
             void setDefaultValues();

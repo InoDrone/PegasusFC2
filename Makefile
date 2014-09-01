@@ -24,13 +24,22 @@ $(BUILD_DIR):
 ################################
 #	BOARDS TARGETS
 ################################
+.PHONY: pegasusfc_v1
+pegasusfc_v1: clean
+	cd $(ROOT_DIR)/targets/pegasusv1 && \
+	make -r --no-print-directory \
+	BOARD_NAME=pegasusv1 \
+	TOPDIR=$(ROOT_DIR)/targets/pegasusv1 \
+	OUTDIR=$(BUILD_DIR) \
+	TARGET=pegasusv1
+	
 .PHONY: pegasusfc_v2
 pegasusfc_v2: clean
-	cd $(ROOT_DIR)/targets/pegasusv2b && \
+	cd $(ROOT_DIR)/targets/pegasusv2 && \
 	make -r --no-print-directory \
-	BOARD_NAME=pegasusv2b \
-	TOPDIR=$(ROOT_DIR)/targets/pegasusv2b \
+	BOARD_NAME=pegasusv2 \
+	TOPDIR=$(ROOT_DIR)/targets/pegasusv2 \
 	OUTDIR=$(BUILD_DIR) \
-	TARGET=pegasusv2b
-	$$*
+	TARGET=pegasusv2
+	
 

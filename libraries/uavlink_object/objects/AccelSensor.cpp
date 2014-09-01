@@ -16,7 +16,11 @@ namespace obj {
         // TODO: using malloc
         memset(&datas, 0, sizeof(datas));
         setDefaultValues();
-        // TODO: load data from (EEPROM or FLASH)
+        
+        /* Load from Flash */
+        if (ACCELSENSOR_ISSETTINGS) {
+	        os::hal::FSFlash::read(ACCELSENSOR_ID, (uint8_t *)&datas, sizeof(Datas));
+	    }
     }
     
     AccelSensor::Datas AccelSensor::get() const {
@@ -36,7 +40,7 @@ namespace obj {
             0 << TELEMETRY_ACKED_SHIFT |
             UPDATEMODE_PERIODIC << TELEMETRY_UPDATEON_SHIFT;
 
-        meta.updatePeriod = 100;
+        meta.updatePeriod = 10000;
         
         // Defaults Values
     
@@ -48,5 +52,9 @@ namespace obj {
     
     void AccelSensor::fromBytes(const uint8_t *in) {
         memcpy(&datas, in, sizeof(Datas));
+        /* Save to from Flash */
+        if (ACCELSENSOR_ISSETTINGS) {
+	        os::hal::FSFlash::save(ACCELSENSOR_ID, (uint8_t *)&datas, sizeof(Datas));
+	    }
     }
 }

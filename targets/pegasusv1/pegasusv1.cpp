@@ -31,6 +31,7 @@ int main()
     /* Start FreeRTOS scheduler */
     vTaskStartScheduler();
 
+
     while (1) {
         PE1::toggle();
         os::hal::Delay::delayMs(100);

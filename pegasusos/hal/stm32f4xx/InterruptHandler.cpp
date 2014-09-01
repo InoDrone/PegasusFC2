@@ -80,6 +80,10 @@ namespace os {
 			void DMA1_Stream6_IRQ(void) {
 			  DMA1_STREAM6::handle();
 			}
+
+			void DMA2_Stream7_IRQ(void) {
+			    DMA2_STREAM7::handle();
+			}
 		}
 	} /* namespace hal */
 } /* namespace os */

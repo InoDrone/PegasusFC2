@@ -86,7 +86,7 @@ goto_exit:
 
             if (!unlockFlash()) return ERROR;
 
-            if (!deleteObject(id)) {
+            if (deleteObject(id) == ERROR) {
                 ret = ERROR;
                 goto goto_exit;
             }
@@ -102,6 +102,7 @@ goto_exit:
                     goto goto_exit;
                 }
             }
+
 
             if (writeObject(id, datas, size) != SUCCESS) {
                 ret = ERROR;
@@ -211,7 +212,7 @@ goto_exit:
 
             FLASH_Status status;
             for (uint16_t i = 0; i < size / 4; i++) {
-                uint32_t data_word = *(uint8_t *)(datas + i * 4);
+                uint32_t data_word = *(uint32_t *)(datas + i * 4);
                 status = FLASH_ProgramWord(addr + i * 4, data_word);
                 if (status != FLASH_COMPLETE) {
                     return ERROR;

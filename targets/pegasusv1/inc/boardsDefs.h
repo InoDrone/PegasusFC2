@@ -9,6 +9,7 @@
 #define BOARDSDEFS_H_
 
 #include <pegasushal.h>
+#include "devices/MS5611.h"
 #include "devices/MPU6000.h"
 
 #define IRQ_PRIO_LOW            12              // lower than RTOS
@@ -125,5 +126,8 @@ typedef os::hal::spi::SpiDevice<SPI1_DRIVER, os::hal::PE15> MS5611_SPIDEVICE;
 typedef os::hal::PE8 MPU6000_INT_PIN;
 typedef os::device::MPU6000<MPU6000_SPIDEVICE> MPU6000;
 
+#define USE_BARO
+#define USE_MS5611
+typedef os::device::MS5611<MS5611_SPIDEVICE> MS5611;
 
 #endif /* BOARDSDEFS_H_ */

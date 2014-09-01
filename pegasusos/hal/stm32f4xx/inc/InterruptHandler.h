@@ -37,6 +37,7 @@ namespace os {
 
 		extern void DMA1_Stream3_IRQ(void);
 		extern void DMA1_Stream6_IRQ(void);
+        extern void DMA2_Stream7_IRQ(void);
 
 		extern void EXTx_IRQ(void);
 
@@ -220,7 +221,7 @@ namespace os {
 			/* DMA2_Stream6_IRQHandler  */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* DMA2_Stream7_IRQHandler  */
-			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
+			reinterpret_cast<uint32_t>(os::hal::isr::DMA2_Stream7_IRQ),
 			/* USART6_IRQHandler   */
 			reinterpret_cast<uint32_t>(os::hal::isr::DefaultHandler),
 			/* I2C3_EV_IRQHandler    */

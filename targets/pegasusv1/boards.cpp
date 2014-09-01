@@ -18,10 +18,14 @@ void boardInit() {
   /* INIT SPI DRIVERS */
   SPIDRIVER_INIT;
 
+  /* INIT Baro FIRST (SPI line using for MPU and MS) */
+  MS5611::init();
+
+  /* INIT MPU6000 */
   os::device::MPU6000Config mpu6000Config;
   mpu6000Config.accelScale 	= os::device::MPU6000_ACCEL_SCALE_4G;
   mpu6000Config.gyroScale 	= os::device::MPU6000_GYRO_SCALE_1000;
-  mpu6000Config.filter 		= os::device::MPU6000_FILTER_98_HZ;
+  mpu6000Config.filter 		= os::device::MPU6000_FILTER_256_HZ;
   mpu6000Config.intPriority	= IRQ_PRIO_HIGH;
   MPU6000::init<MPU6000_INT_PIN>(mpu6000Config);
 

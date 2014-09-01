@@ -61,6 +61,19 @@
         return current;
     }
 
+    void Math::filter(math::Vector3f current, math::Vector3f *previous, float factor)
+    {
+        if (factor != 1.0 && factor != 0) {
+            previous->x = (previous->x * factor) + (current.x * (1.0f - factor));
+            previous->y = (previous->y * factor) + (current.y * (1.0f - factor));
+            previous->z = (previous->z * factor) + (current.z * (1.0f - factor));
+        } else {
+            previous->x = current.x;
+            previous->y = current.y;
+            previous->z = current.z;
+        }
+    }
+
     // ****** find quaternion from roll, pitch, yaw ********
     void Math::RPY2Quaternion(const float rpy[3], float q[4])
     {
@@ -110,4 +123,15 @@
         rpy[0] = RAD2DEG(atan2f(R23, R33));
 
         // TODO: consider the cases where |R13| ~= 1, |pitch| ~= pi/2
+    }
+
+    float Math::InvSqrt (float x)
+    {
+      union{
+        int32_t i;
+        float   f;
+      } conv;
+      conv.f = x;
+      conv.i = 0x5f3759df - (conv.i >> 1);
+      return 0.5f * conv.f * (3.0f - x * conv.f * conv.f);
     }

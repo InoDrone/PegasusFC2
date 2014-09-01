@@ -20,9 +20,10 @@ void TelemetryRX::init(UAVLink::Instance* ulink)
 void TelemetryRX::run()
 {
     while(1) {
-
-	while(TELEMETRY_PORT::bytesAvailable()) {
-	    UAVLink::receive(uavlink, TELEMETRY_PORT::read());
-	}
+        if (TELEMETRY_PORT::bytesAvailable()) {
+            UAVLink::receive(uavlink, TELEMETRY_PORT::read());
+        } else {
+            delay(5);
+        }
     }
 }
